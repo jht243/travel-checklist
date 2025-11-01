@@ -30,26 +30,8 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
-type MortgageWidget = {
-  id: string;
-  title: string;
-  templateUri: string;
-  invoking: string;
-  invoked: string;
-  html: string;
-  responseText: string;
-};
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT_DIR = process.env.ASSETS_ROOT || path.resolve(__dirname, "..", "..");
-const ASSETS_DIR = path.resolve(ROOT_DIR, "assets");
 const LOGS_DIR = path.resolve(__dirname, "..", "logs");
-
-console.log(`Assets directory: ${ASSETS_DIR}`);
-console.log(`Assets directory exists: ${fs.existsSync(ASSETS_DIR)}`);
-if (fs.existsSync(ASSETS_DIR)) {
-  console.log(`Assets contents: ${fs.readdirSync(ASSETS_DIR).join(', ')}`);
-}
 
 if (!fs.existsSync(LOGS_DIR)) {
   fs.mkdirSync(LOGS_DIR, { recursive: true });
@@ -100,91 +82,6 @@ function getRecentLogs(days: number = 7): AnalyticsEvent[] {
   return logs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
 }
 
-function readWidgetHtml(componentName: string): string {
-  if (!fs.existsSync(ASSETS_DIR)) {
-    throw new Error(
-      `Widget assets not found. Expected directory ${ASSETS_DIR}. Run "pnpm run build" before starting the server.`
-    );
-  }
-
-  const directPath = path.join(ASSETS_DIR, `${componentName}.html`);
-  let htmlContents: string | null = null;
-
-  if (fs.existsSync(directPath)) {
-    htmlContents = fs.readFileSync(directPath, "utf8");
-  } else {
-    const candidates = fs
-      .readdirSync(ASSETS_DIR)
-      .filter(
-        (file) => file.startsWith(`${componentName}-`) && file.endsWith(".html")
-      )
-      .sort();
-    const fallback = candidates[candidates.length - 1];
-    if (fallback) {
-      htmlContents = fs.readFileSync(path.join(ASSETS_DIR, fallback), "utf8");
-    }
-  }
-
-  if (!htmlContents) {
-    throw new Error(
-      `Widget HTML for "${componentName}" not found in ${ASSETS_DIR}. Run "pnpm run build" to generate the assets.`
-    );
-  }
-
-  return htmlContents;
-}
-
-function widgetMeta(widget: MortgageWidget) {
-  return {
-    "openai/outputTemplate": widget.templateUri,
-    "openai/widgetDescription": "Simple mortgage calculator that shows monthly payments based on purchase price, interest rate, and loan term.",
-    "openai/widgetPrefersBorder": true,
-    "openai/toolInvocation/invoking": widget.invoking,
-    "openai/toolInvocation/invoked": widget.invoked,
-    "openai/widgetAccessible": true,
-    "openai/resultCanProduceWidget": true,
-    "openai/starterPrompts": [
-      "Show me a mortgage calculator",
-      "Calculate mortgage payment",
-      "What will my monthly payment be?"
-    ],
-    "openai/sampleConversations": [
-      {
-        "user": "Show me a mortgage calculator",
-        "assistant": "I'll show you the mortgage calculator.",
-        "tool": "mortgage-calculator",
-        "params": {}
-      },
-      {
-        "user": "Calculate mortgage for $350,000",
-        "assistant": "I'll calculate that for you.",
-        "tool": "mortgage-calculator",
-        "params": { "purchasePrice": 350000 }
-      }
-    ]
-  } as const;
-}
-
-const widgets: MortgageWidget[] = [
-  {
-    id: "mortgage-calculator",
-    title: "Mortgage Calculator",
-    templateUri: "ui://widget/mortgage-calculator.html",
-    invoking: "Calculating your mortgage payment details...",
-    invoked: "Here are your mortgage calculation results",
-    html: readWidgetHtml("mortgage-calculator"),
-    responseText: "Here is your personalized mortgage calculation with monthly payment breakdown.",
-  },
-];
-
-const widgetsById = new Map<string, MortgageWidget>();
-const widgetsByUri = new Map<string, MortgageWidget>();
-
-widgets.forEach((widget) => {
-  widgetsById.set(widget.id, widget);
-  widgetsByUri.set(widget.templateUri, widget);
-});
-
 const toolInputSchema = {
   type: "object",
   properties: {
@@ -211,35 +108,24 @@ const toolInputParser = z.object({
   loanTerm: z.number().optional(),
 });
 
-const tools: Tool[] = widgets.map((widget) => ({
-  name: widget.id,
-  description: "Shows an interactive mortgage calculator widget. Use this tool when users ask to see a mortgage calculator, calculate mortgage payments, or want to know monthly payment amounts. The widget will collect purchase price, interest rate, and loan term from the user.",
-  inputSchema: toolInputSchema,
-  title: "Mortgage Calculator",
-  _meta: widgetMeta(widget),
-  // To disable the approval prompt for the widgets
-  annotations: {
-    destructiveHint: false,
-    openWorldHint: false,
-    readOnlyHint: true,
+const tools: Tool[] = [
+  {
+    name: "mortgage-calculator",
+    description:
+      "Use this when a user wants a text summary of mortgage payment information. Provide purchase price, interest rate, and loan term to receive a written breakdown.",
+    inputSchema: toolInputSchema,
+    title: "Mortgage Calculator",
+    annotations: {
+      destructiveHint: false,
+      openWorldHint: false,
+      readOnlyHint: true,
+    },
   },
-}));
+];
 
-const resources: Resource[] = widgets.map((widget) => ({
-  uri: widget.templateUri,
-  name: widget.title,
-  description: `${widget.title} widget markup`,
-  mimeType: "text/html+skybridge",
-  _meta: widgetMeta(widget),
-}));
+const resources: Resource[] = [];
 
-const resourceTemplates: ResourceTemplate[] = widgets.map((widget) => ({
-  uriTemplate: widget.templateUri,
-  name: widget.title,
-  description: `${widget.title} widget markup`,
-  mimeType: "text/html+skybridge",
-  _meta: widgetMeta(widget),
-}));
+const resourceTemplates: ResourceTemplate[] = [];
 
 function createMortgageCalculatorServer(): Server {
   const server = new Server(
@@ -258,45 +144,24 @@ function createMortgageCalculatorServer(): Server {
 
   server.setRequestHandler(
     ListResourcesRequestSchema,
-    async (_request: ListResourcesRequest) => ({
-      resources,
-    })
+    async (_request: ListResourcesRequest) => ({ resources })
   );
 
   server.setRequestHandler(
     ReadResourceRequestSchema,
     async (request: ReadResourceRequest) => {
-      const widget = widgetsByUri.get(request.params.uri);
-
-      if (!widget) {
-        throw new Error(`Unknown resource: ${request.params.uri}`);
-      }
-
-      return {
-        contents: [
-          {
-            uri: widget.templateUri,
-            mimeType: "text/html+skybridge",
-            text: widget.html,
-            _meta: widgetMeta(widget),
-          },
-        ],
-      };
+      throw new Error(`Unknown resource: ${request.params.uri}`);
     }
   );
 
   server.setRequestHandler(
     ListResourceTemplatesRequestSchema,
-    async (_request: ListResourceTemplatesRequest) => ({
-      resourceTemplates,
-    })
+    async (_request: ListResourceTemplatesRequest) => ({ resourceTemplates })
   );
 
   server.setRequestHandler(
     ListToolsRequestSchema,
-    async (_request: ListToolsRequest) => ({
-      tools,
-    })
+    async (_request: ListToolsRequest) => ({ tools })
   );
 
   server.setRequestHandler(
@@ -308,16 +173,6 @@ function createMortgageCalculatorServer(): Server {
       console.log("Full request object:", JSON.stringify(request, null, 2));
       
       try {
-        const widget = widgetsById.get(request.params.name);
-
-        if (!widget) {
-          logAnalytics("tool_call_error", {
-            error: "Unknown tool",
-            toolName: request.params.name,
-          });
-          throw new Error(`Unknown tool: ${request.params.name}`);
-        }
-
         let args;
         try {
           args = toolInputParser.parse(request.params.arguments ?? {});
@@ -346,34 +201,35 @@ function createMortgageCalculatorServer(): Server {
         if (args.interestRate) inferredQuery.push(`interestRate: ${args.interestRate}%`);
         if (args.loanTerm) inferredQuery.push(`loanTerm: ${args.loanTerm} years`);
 
+        const summary = "hello world";
+
         logAnalytics("tool_call_success", {
           toolName: request.params.name,
           params: args,
           inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "mortgage calculation",
           responseTime,
-          userLocation: userLocation ? {
-            city: userLocation.city,
-            region: userLocation.region,
-            country: userLocation.country,
-            timezone: userLocation.timezone
-          } : null,
+          userLocation: userLocation
+            ? {
+                city: userLocation.city,
+                region: userLocation.region,
+                country: userLocation.country,
+                timezone: userLocation.timezone,
+              }
+            : null,
           userLocale,
-          userAgent
+          userAgent,
         });
 
         return {
           content: [
             {
               type: "text",
-              text: widget.responseText,
+              text: summary,
             },
           ],
           structuredContent: {
-            purchasePrice: args.purchasePrice,
-            interestRate: args.interestRate,
-            loanTerm: args.loanTerm,
+            message: summary,
           },
-          _meta: widgetMeta(widget),
         };
       } catch (error: any) {
         logAnalytics("tool_call_error", {
