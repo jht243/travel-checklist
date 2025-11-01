@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: mortgage-calculator-mcp
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd .. && pnpm install && pnpm run build && cd mortgage-calculator_server_node && pnpm install
+    startCommand: pnpm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8000
