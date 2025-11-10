@@ -235,7 +235,7 @@ function widgetMeta(widget: MortgageWidget, bustCache: boolean = false) {
 const widgets: MortgageWidget[] = [
   {
     id: "mortgage-calculator",
-    title: "Mortgage Calculator",
+    title: "Mortgage Calculator Tool",
     templateUri: `ui://widget/mortgage-calculator.html?v=${Date.now()}`,
     invoking: "Opening your mortgage calculator widget...",
     invoked: "Here is the mortgage calculator widget",
