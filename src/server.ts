@@ -93,7 +93,7 @@ async function fetchFredLatestRate(): Promise<{ raw: number; adjusted: number; o
       });
       return null;
     }
-    const adjusted = raw + 0.5;
+    const adjusted = raw - 0.4;
     console.log("[FRED] Received observation", {
       observationDate: firstValid.date,
       raw,
@@ -160,7 +160,7 @@ async function handleRate(req: IncomingMessage, res: ServerResponse) {
   const payload: any = {
     ratePercent: rounded,
     rawPercent: result.raw,
-    adjustedAdded: 0.5,
+    adjustedAdded: -0.4,
     observationDate: result.observationDate,
     source: result.source,
   };
