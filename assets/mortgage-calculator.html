@@ -2351,6 +2351,7 @@
               return { proto: '', host: '', onOwnHost: false };
             }
           })();
+          const RENDER_EXPORT = 'https://mortgage-calculator-open-ai.onrender.com/api/export-pdf';
           const EXPORT_ENDPOINTS = env.onOwnHost
             ? ['/api/export-pdf', 'https://mortgage-calculator-open-ai.onrender.com/api/export-pdf', 'http://localhost:8000/api/export-pdf']
             : ['https://mortgage-calculator-open-ai.onrender.com/api/export-pdf', 'http://localhost:8000/api/export-pdf', '/api/export-pdf'];
@@ -2383,48 +2384,135 @@
           try { emitTelemetry('export_pdf_bound', {}); } catch (_) {}
           console.debug('Export PDF: binding click handler');
 
-          const onExportClick = async () => {
+          const ensurePrintStyles = () => {
             try {
-              // Ensure latest calc
-              const params = readParams();
-              const calc = mortgageCalculator.calculate_mortgage(params);
-              const d = calc.derived;
-              const monthlyPayment = Math.round((d.p_and_i + d.tax_monthly + d.ins_monthly + d.hoa_monthly + d.monthly_mi_initial) * 100) / 100;
-              const canvas = document.getElementById('breakdownChart');
-              let chartPngDataUrl = undefined;
-              if (canvas && canvas.toDataURL) {
-                try { chartPngDataUrl = canvas.toDataURL('image/png'); } catch (_) {}
+              const existing = document.getElementById('printStyles');
+              if (existing) {
+                try { emitTelemetry('export_print_styles_present', {}); } catch (_) {}
+                console.debug('Print: styles already present');
+                return true;
               }
-              try { emitTelemetry('export_pdf_click', { hasChart: !!chartPngDataUrl, chartLen: chartPngDataUrl ? chartPngDataUrl.length : 0 }); } catch (_) {}
-              console.debug('Export PDF starting', { hasChart: !!chartPngDataUrl, chartLen: chartPngDataUrl ? chartPngDataUrl.length : 0, monthlyPayment, paramKeys: Object.keys(params || {}) });
+              const css = `
+                @media print {
+                  .no-print, nav, footer, .modal, .controls, .buttons, button, [role="button"], #feedbackBtn, #subscribeBtn { display: none !important; }
+                  body { background: #fff !important; }
+                  #app, .container, .card { box-shadow: none !important; border: none !important; }
+                  canvas { max-width: 100% !important; height: auto !important; }
+                  .page-break { page-break-before: always; }
+                  html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                }
+              `;
+              const style = document.createElement('style');
+              style.id = 'printStyles';
+              style.type = 'text/css';
+              style.appendChild(document.createTextNode(css));
+              (document.head || document.documentElement).appendChild(style);
+              try { emitTelemetry('export_print_styles_injected', {}); } catch (_) {}
+              console.debug('Print: styles injected');
+              return true;
+            } catch (e) {
+              try { emitTelemetry('export_print_styles_error', { error: String(e && e.message || e) }); } catch (_) {}
+              console.error('Print: failed to inject styles', e);
+              return false;
+            }
+          };
 
-              let resp = null;
-              for (const url of EXPORT_ENDPOINTS) {
-                try {
-                  try { emitTelemetry('export_pdf_attempt', { url }); } catch (_) {}
-                  console.debug('Export PDF POST', url);
-                  resp = await postForBlob(url, { params, monthlyPayment, chartPngDataUrl });
-                  if (resp && resp.ok) break;
-                } catch (_) { /* try next */ }
+          const collectPrintEnv = () => {
+            const env = { topSame: false, iframe: false, visibility: '', userAgent: '', ts: Date.now() };
+            try { env.topSame = window.top === window; } catch (_) { env.topSame = false; }
+            try { env.iframe = window.top !== window; } catch (_) { env.iframe = true; }
+            try { env.visibility = document.visibilityState || ''; } catch (_) {}
+            try { env.userAgent = navigator.userAgent || ''; } catch (_) {}
+            return env;
+          };
+
+          const bindPrintLifecycle = () => {
+            const id = Math.random().toString(36).slice(2);
+            const env = collectPrintEnv();
+            let afterFired = false;
+            try { emitTelemetry('export_print_lifecycle_bind', { id, env }); } catch (_) {}
+            console.debug('Print: lifecycle bound', { id, env });
+            const before = () => {
+              try { emitTelemetry('export_print_before', { id }); } catch (_) {}
+              console.debug('Print: beforeprint', { id });
+            };
+            const after = () => {
+              afterFired = true;
+              try { emitTelemetry('export_print_after', { id }); } catch (_) {}
+              console.debug('Print: afterprint', { id });
+              window.removeEventListener('beforeprint', before);
+              window.removeEventListener('afterprint', after);
+            };
+            window.addEventListener('beforeprint', before);
+            window.addEventListener('afterprint', after);
+            setTimeout(() => {
+              if (!afterFired) {
+                try { emitTelemetry('export_print_after_timeout', { id }); } catch (_) {}
+                console.debug('Print: afterprint timeout', { id });
+                window.removeEventListener('beforeprint', before);
+                window.removeEventListener('afterprint', after);
               }
-              if (!resp || !resp.ok) {
-                let status = resp ? `${resp.status} ${resp.statusText || ''}`.trim() : 'no-response';
-                let detail = '';
-                try { detail = resp ? (await resp.text()).slice(0, 200) : ''; } catch (_) {}
-                try { emitTelemetry('export_pdf_failure', { status, detail }); } catch (_) {}
-                console.error('Export PDF failed', { status, detail });
-                showToast('error', `Export failed${status ? ` (${status})` : ''}`);
-                return;
-              }
-              const blob = await resp.blob();
-              triggerDownload(blob, 'Mortgage_Summary.pdf');
-              try { emitTelemetry('export_pdf_success', { size: blob.size }); } catch (_) {}
-              console.debug('Export PDF success', { size: blob.size });
-              showToast('success', 'PDF downloaded');
+            }, 10000);
+          };
+
+          const openDirectGetLite = (params, monthlyPayment) => {
+            try {
+              const lite = { params, monthlyPayment };
+              const q = encodeURIComponent((() => { try { return btoa(unescape(encodeURIComponent(JSON.stringify(lite)))) } catch (_) { return btoa(JSON.stringify(lite)); } })());
+              const direct = `${RENDER_EXPORT}?q=${q}`;
+              // Try anchor in new tab
+              try {
+                const a = document.createElement('a');
+                a.href = direct;
+                a.target = '_blank';
+                a.rel = 'noopener';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => a.remove(), 0);
+              } catch (_) {}
+              // Also try hidden iframe to trigger download without popup
+              try {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.width = '0';
+                iframe.height = '0';
+                iframe.src = direct;
+                document.body.appendChild(iframe);
+                setTimeout(() => iframe.remove(), 5000);
+              } catch (_) {}
+              console.debug('Export PDF direct-open (GET-lite)', direct);
+              return true;
+            } catch (e) {
+              console.debug('Export PDF direct-open failed', e);
+              return false;
+            }
+          };
+
+          const onExportClick = async () => {
+            const env = collectPrintEnv();
+            try { emitTelemetry('export_print_click', { env }); } catch (_) {}
+            console.debug('Print: click', { env });
+            const ok = ensurePrintStyles();
+            if (!ok) {
+              try { emitTelemetry('export_print_blocked', { reason: 'style_injection_failed' }); } catch (_) {}
+              console.error('Print: style injection failed');
+              try { showToast('error', 'Print failed — try Cmd/Ctrl+P'); } catch (_) {}
+              return;
+            }
+            bindPrintLifecycle();
+            try { showToast('info', 'Opening print dialog'); } catch (_) {}
+            try {
+              setTimeout(() => {
+                try { window.print(); } catch (e) {
+                  try { emitTelemetry('export_print_error', { error: String(e && e.message || e) }); } catch (_) {}
+                  console.error('Print: window.print() threw', e);
+                  try { showToast('error', 'Print blocked — use Cmd/Ctrl+P'); } catch (_) {}
+                }
+              }, 0);
             } catch (err) {
-              try { emitTelemetry('export_pdf_failure', { error: String(err && err.message || err) }); } catch (_) {}
-              console.error('Export PDF error', err);
-              showToast('error', 'Export failed');
+              try { emitTelemetry('export_print_error', { error: String(err && err.message || err) }); } catch (_) {}
+              console.error('Print: error invoking print', err);
+              try { showToast('error', 'Print failed — use Cmd/Ctrl+P'); } catch (_) {}
             }
           };
           exportBtn.addEventListener('click', onExportClick);

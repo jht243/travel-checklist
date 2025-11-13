@@ -50,6 +50,21 @@ if (!fs.existsSync(LOGS_DIR)) {
   fs.mkdirSync(LOGS_DIR, { recursive: true });
 }
 
+async function handlePing(req: IncomingMessage, res: ServerResponse) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "content-type");
+  res.setHeader("Content-Type", "application/json");
+  if (req.method === "OPTIONS") {
+    res.writeHead(204).end();
+    return;
+  }
+  if (req.method !== "GET") {
+    res.writeHead(405).end(JSON.stringify({ error: "Method not allowed" }));
+    return;
+  }
+  res.writeHead(200).end(JSON.stringify({ ok: true, ts: Date.now() }));
+}
+
 async function handleExportPdf(req: IncomingMessage, res: ServerResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Headers", "content-type");
@@ -947,6 +962,7 @@ const subscribePath = "/api/subscribe";
 const analyticsPath = "/analytics";
 const trackEventPath = "/api/track";
 const exportPdfPath = "/api/export-pdf";
+const pingPath = "/api/ping";
 const healthPath = "/health";
 const ratePath = "/api/rate";
 
@@ -1795,6 +1811,11 @@ const httpServer = createServer(
 
     if (url.pathname === trackEventPath) {
       await handleTrackEvent(req, res);
+      return;
+    }
+
+    if (url.pathname === pingPath) {
+      await handlePing(req, res);
       return;
     }
 
