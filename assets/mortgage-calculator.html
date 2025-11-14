@@ -1379,9 +1379,6 @@
                       <span class="label">Monthly payment (month 0)</span>
                       <div class="card-controls">
                         <span class="badge">All-in payment</span>
-                        <button type="button" id="copyPaymentBtn" class="icon-btn" aria-label="Copy monthly payment" title="Copy monthly payment">
-                          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 3H9c-1.1 0-2 .9-2 2v12h2V5h10V3zm-3 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm0 14H5V9h11v12z"/></svg>
-                        </button>
                       </div>
                     </div>
                     <span class="value" id="total_monthly_0" aria-live="polite">$0</span>
@@ -1978,7 +1975,6 @@
         };
 
         const scenarioBar = document.getElementById("scenarioBar");
-        const copyPaymentBtn = document.getElementById("copyPaymentBtn");
         let didUserEdit = false;
 
         const miVisibilityPrograms = new Set(["FHA", "USDA"]);
@@ -2808,20 +2804,7 @@
           calculateAndRender();
         });
 
-        if (copyPaymentBtn) {
-          copyPaymentBtn.addEventListener("click", async () => {
-            const text = outputs.total_monthly_0?.textContent?.trim();
-            if (!text) return;
-            try {
-              await navigator.clipboard.writeText(text);
-              showToast("success", "Monthly payment copied");
-              emitTelemetry("copy_monthly_payment", { value: text });
-            } catch (err) {
-              showToast("error", "Copy failed");
-              console.error("Clipboard write failed", err);
-            }
-          });
-        }
+        
 
         Object.values(inputs).forEach((el) => {
           const handler = () => {
