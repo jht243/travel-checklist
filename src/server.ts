@@ -41,7 +41,30 @@ type MortgageWidget = {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = process.env.ASSETS_ROOT || path.resolve(__dirname, "..");
-const ASSETS_DIR = path.resolve(ROOT_DIR, "assets");
+// Resolve assets directory robustly across environments (Render may mount repo under different roots)
+const CANDIDATE_ASSETS_DIRS = [
+  // If ASSETS_ROOT is provided, prefer its /assets child and the root itself (in case ASSETS_ROOT already points to /assets)
+  process.env.ASSETS_ROOT ? path.resolve(process.env.ASSETS_ROOT, "assets") : "",
+  process.env.ASSETS_ROOT ? path.resolve(process.env.ASSETS_ROOT) : "",
+  // Repo root /assets (running with tsx from src/)
+  path.resolve(__dirname, "..", "assets"),
+  // Monorepo/go workspaces where cwd is project root
+  path.resolve(process.cwd(), "assets"),
+  // One more level up just in case
+  path.resolve(__dirname, "..", "..", "assets"),
+  // Fallback to ROOT_DIR/assets
+  path.resolve(ROOT_DIR, "assets"),
+].filter(Boolean) as string[];
+
+const pickAssetsDir = (): string => {
+  for (const p of CANDIDATE_ASSETS_DIRS) {
+    try { if (fs.existsSync(p)) return p; } catch {}
+  }
+  // Default guess (may not exist; readWidgetHtml will throw with candidates listed)
+  return path.resolve(ROOT_DIR, "assets");
+};
+
+const ASSETS_DIR = pickAssetsDir();
 const LOGS_DIR = path.resolve(__dirname, "..", "logs");
 
 if (!fs.existsSync(LOGS_DIR)) {
@@ -345,8 +368,9 @@ function computeSummary(args: any) {
 
 function readWidgetHtml(componentName: string): string {
   if (!fs.existsSync(ASSETS_DIR)) {
+    const searched = Array.from(new Set(CANDIDATE_ASSETS_DIRS)).join(" | ");
     throw new Error(
-      `Widget assets not found. Expected directory ${ASSETS_DIR}. Run "pnpm run build" before starting the server.`
+      `Widget assets not found. Searched: ${searched}. Set ASSETS_ROOT to your project root or ensure the assets directory is present in the repo.`
     );
   }
 
