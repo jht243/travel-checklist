@@ -2511,7 +2511,7 @@
         const baseDefaults = {
           loan_type: "conventional",
           home_value: 450000,
-          down_payment_value: 90000,
+          down_payment_value: 5000,
           rate_apr: 6.75,
           term_years: 30,
           start_month: 2,
@@ -5313,12 +5313,18 @@
                 'home_value','down_payment_value','rate_apr','term_years','property_tax_input','homeowners_insurance_yearly','hoa_monthly','pmi_pct','annual_mi_pct','upfront_fee_pct','start_month','start_year','extra_principal_monthly','extra_start_month_index',
                 // rental-specific
                 'purchase_price','closing_cost','monthly_rent','other_monthly_income','vacancy_rate_pct','exp_property_tax_annual','exp_insurance_annual','exp_hoa_annual','exp_maintenance_annual','exp_other_annual','down_payment_pct','interest_rate_pct','loan_term_years','monthly_rent_increase_pct','other_monthly_income_increase_pct','exp_property_tax_increase_pct','exp_insurance_increase_pct','exp_hoa_increase_pct','exp_maintenance_increase_pct','exp_other_increase_pct','holding_length_years','cost_to_sell_pct','value_appreciation_pct','sell_price',
-                // auto-loan specific
-                'auto_price','loan_term_months','cash_incentives','trade_in_value','trade_in_owed','sales_tax_pct','title_fees'
-              ]);
-              out[k] = keysNeedingNum.has(k) ? parseNumberish(v) : v;
-            }
-          };
+          // auto-loan specific
+          'auto_price','loan_term_months','cash_incentives','trade_in_value','trade_in_owed','sales_tax_pct','title_fees',
+          'monthly_payment','residual_value'
+        ]);
+        if (k === 'down_payment_value' && keysNeedingNum.has(k)) {
+             // If baseDefaults is leaking "90000" from mortgage legacy, prevent it from overriding auto default
+             // only accept if explicitly provided in src (not inherited from some mortgage default)
+             // Ideally we rely on 'pickProvided' to only return keys that are actually present in the payload
+        }
+        out[k] = keysNeedingNum.has(k) ? parseNumberish(v) : v;
+      }
+    };
           setIf('loan_type', src.loan_type);
           setIf('home_value', src.home_value);
           setIf('down_payment_value', src.down_payment_value);
@@ -5348,6 +5354,10 @@
           setIf('sales_tax_pct', src.sales_tax_pct);
           setIf('title_fees', src.title_fees);
           setIf('include_taxes_fees', src.include_taxes_fees);
+          setIf('monthly_payment', src.monthly_payment);
+          setIf('residual_value', src.residual_value);
+          setIf('calculate_by', src.calculate_by);
+          setIf('purchase_type', src.purchase_type);
           // rental-specific overlays
           setIf('purchase_price', src.purchase_price);
           setIf('closing_cost', src.closing_cost);
@@ -5400,7 +5410,8 @@
           const ids = [
             'auto_price','down_payment_value','interest_rate_pct','loan_term_months',
             'cash_incentives','trade_in_value','trade_in_owed',
-            'state','sales_tax_pct','title_fees','include_taxes_fees'
+            'state','sales_tax_pct','title_fees','include_taxes_fees',
+            'monthly_payment','residual_value'
           ];
           ids.forEach((id) => {
             if (!(id in params)) return;
@@ -5431,7 +5442,41 @@
                 catch(_) { d.textContent = String(v); }
               }
             }
+            if (id === 'monthly_payment') {
+              const s = document.getElementById('monthly_payment_slider');
+              const d = document.getElementById('monthly_payment_slider_display');
+              if (s) s.value = String(v);
+              if (d) {
+                try { d.textContent = formatCurrency(Number(v || 0)); }
+                catch(_) { d.textContent = String(v); }
+              }
+            }
           });
+
+          // Handle Radio Buttons (Purchase Type & Calculation Mode)
+          if (params.purchase_type) {
+            const isLease = params.purchase_type === 'lease';
+            const ptLease = document.getElementById('purchase_type_lease');
+            const ptLoan = document.getElementById('purchase_type_loan');
+            if (ptLease && ptLoan) {
+               ptLease.checked = isLease;
+               ptLoan.checked = !isLease;
+               // Trigger change to update UI visibility
+               ptLease.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          }
+
+          if (params.calculate_by) {
+            const isPayment = params.calculate_by === 'payment';
+            const cbPayment = document.getElementById('calculate_by_payment');
+            const cbPrice = document.getElementById('calculate_by_price');
+            if (cbPayment && cbPrice) {
+               cbPayment.checked = isPayment;
+               cbPrice.checked = !isPayment;
+               // Trigger change to update UI visibility
+               cbPayment.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          }
         };
         const readProvidedParams = () => {
           const oa = (window && window.openai) ? window.openai : {};

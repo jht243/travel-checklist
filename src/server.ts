@@ -518,6 +518,7 @@ const toolInputSchema = {
     include_taxes_fees: { type: "boolean", description: "If true, include taxes and fees in the financed amount." },
     monthly_payment: { type: "number", description: "Target monthly payment (if calculating vehicle price)." },
     calculate_by: { type: "string", enum: ["price", "payment"], description: "Calculation mode: 'price' (default) or 'payment'." },
+    purchase_type: { type: "string", enum: ["loan", "lease"], description: "Purchase type: 'loan' (default) or 'lease'." },
   },
   required: [],
   additionalProperties: false,
@@ -537,6 +538,7 @@ const toolInputParser = z.object({
   include_taxes_fees: z.boolean().optional(),
   monthly_payment: z.number().optional(),
   calculate_by: z.enum(["price", "payment"]).optional(),
+  purchase_type: z.enum(["loan", "lease"]).optional(),
 });
 
 const tools: Tool[] = widgets.map((widget) => ({
@@ -784,7 +786,8 @@ function createAutoLoanCalculatorServer(): Server {
 
           // Infer down_payment_value
           if (args.down_payment_value === undefined) {
-            const dpRe = /\$?([\d,.]+)\s*(?:down|dp)\b/i;
+            // Allow "downpayment" (one word), "donpayment" (typo), "down payment", etc.
+            const dpRe = /\$?([\d,.]+)\s*(?:down\s*payment|downpayment|down|dp|dwn|dn|donpayment|don\s*payment)\b/i;
             const dpMatch = userText.match(dpRe);
             if (dpMatch && dpMatch[1]) {
               const n = parseAmountToNumber(dpMatch[1]);
@@ -815,12 +818,27 @@ function createAutoLoanCalculatorServer(): Server {
 
           // Infer interest_rate_pct
           if (args.interest_rate_pct === undefined) {
-            const rateMatch = userText.match(/\b(\d{1,2}(?:\.\d+)?)\s*%/i) || userText.match(/\b(?:rate|apr|at)\s*(\d{1,2}(?:\.\d+)?)\b/i);
-            if (rateMatch && rateMatch[1]) {
-              const rate = parseFloat(rateMatch[1]);
-              if (rate > 0 && rate < 30) {
-                args.interest_rate_pct = rate;
+            // Match "5.3%", "5.3 percent", "interest rate of 5.3", "at 5.3"
+            // Relaxed regex to capture rate even if \b boundary is tricky with commas
+            const rateRe = /(?:rate|apr|at|interest)\s*(?:is|of)?\s*:?\s*(\d{1,2}(?:\.\d+)?)\s*%?|(\d{1,2}(?:\.\d+)?)\s*(?:%|percent|pct)/i;
+            const rateMatch = userText.match(rateRe);
+            if (rateMatch) {
+              // Group 1 or Group 2 could be the number
+              const rateStr = rateMatch[1] || rateMatch[2];
+              if (rateStr) {
+                const rate = parseFloat(rateStr);
+                if (rate > 0 && rate < 30) {
+                  args.interest_rate_pct = rate;
+                }
               }
+            }
+          }
+
+          // Infer purchase_type (lease)
+          if (args.purchase_type === undefined) {
+            if (/\b(?:lease|leasing)\b/i.test(userText)) {
+              args.purchase_type = "lease";
+              console.log("[Inference] purchase_type inferred as lease");
             }
           }
 
@@ -890,6 +908,7 @@ function createAutoLoanCalculatorServer(): Server {
           sales_tax_pct: args.sales_tax_pct,
           title_fees: args.title_fees,
           include_taxes_fees: args.include_taxes_fees,
+          purchase_type: args.purchase_type,
           // Summary + follow-ups for natural language UX
           summary: computeSummary(args),
           suggested_followups: [
