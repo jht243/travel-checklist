@@ -7,6 +7,16 @@
     <meta property="og:title" content="Auto Loan Calculator — Estimate Your Car Payments" />
     <meta property="og:description" content="Use this simple and powerful auto loan calculator to figure out your monthly payments and total loan cost." />
     <meta name="keywords" content="auto loan calculator, car payment calculator, vehicle financing, auto loan interest, car loan amortization" />
+    <script>
+      window.__TURNSTILE_LOADED__ = false;
+      window.onTurnstileLoad = function () {
+        window.__TURNSTILE_LOADED__ = true;
+        try {
+          window.dispatchEvent(new CustomEvent('turnstile-ready'));
+        } catch (_) {}
+      };
+    </script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad" async defer></script>
     <style>
       *, *::before, *::after {
         box-sizing: border-box;
@@ -200,6 +210,33 @@
         gap: 12px;
         box-shadow: 0 4px 12px rgba(10, 13, 28, 0.4);
         min-width: 0;
+      }
+
+      .captcha-wrapper {
+        margin-top: 16px;
+        padding: 12px 0;
+        border-top: 1px solid rgba(148, 163, 184, 0.12);
+      }
+
+      .turnstile-placeholder {
+        min-height: 78px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .captcha-footnote {
+        display: block;
+        margin-top: 6px;
+        font-size: 11px;
+        color: rgba(148, 163, 184, 0.7);
+        text-align: center;
+      }
+
+      .captcha-error {
+        color: #fca5a5;
+        font-size: 12px;
+        text-align: center;
       }
 
       details.section-block {
@@ -1626,14 +1663,28 @@
         </div>
 
         <!-- Row 3: Sales Tax + Include taxes checkbox -->
-        <div class="grid duo-columns">
-          <label class="percent-field loan-field">
-            Sales Tax (%)
+        <div class="grid duo-columns" id="taxes_fees_row">
+          <label class="percent-field loan-field has-tip">
+            <span class="label-row">Sales Tax (%) <span class="info-wrap"><button type="button" class="info-trigger" aria-label="What is this?" title="What is this?">i</button><div class="info-bubble" role="tooltip">
+              <p class="tip-title">Sales Tax</p>
+              <p class="tip-text">The tax that is imposed by the state or local government. This tax is usually calculated as a percentage of the total purchase price and varies based on location.</p>
+            </div></span></span>
             <input type="number" id="sales_tax_pct" min="0" step="0.01" />
           </label>
           <label class="loan-field checkbox-row" style="align-items:center;">
             <input type="checkbox" id="include_taxes_fees" />
             <span>Include taxes and fees in loan</span>
+          </label>
+        </div>
+
+        <!-- Row 4: Residual Value (Lease Only) -->
+        <div class="grid duo-columns lease-only-field is-hidden" id="residual_row">
+          <label class="has-tip">
+            <span class="label-row">Residual Value ($) <span class="info-wrap"><button type="button" class="info-trigger" aria-label="What is this?" title="What is this?">i</button><div class="info-bubble" role="tooltip">
+              <p class="tip-title">Residual Value</p>
+              <p class="tip-text">Residual value is an estimation of the worth of the vehicle at the end of the lease period. Financial institutions that issue lease contracts, not the dealers, set residual values on vehicles. Sometimes, it is also called the lease-end value.</p>
+            </div></span></span>
+            <input type="number" id="residual_value" min="0" step="100" />
           </label>
         </div>
     </div>
@@ -1645,13 +1696,16 @@
       <span class="summary-title"><span class="icon">🚗</span> Trade In Details</span>
     </summary>
     <div class="collapsible-content">
-      <div class="grid duo-columns">
+      <div class="grid duo-columns" id="trade_in_row">
         <label class="loan-field">
           Cash Incentives ($)
           <input type="number" id="cash_incentives" min="0" step="50" />
         </label>
-        <label class="loan-field">
-          Trade-in Value ($)
+        <label class="loan-field has-tip">
+          <span class="label-row">Trade-in Value ($) <span class="info-wrap"><button type="button" class="info-trigger" aria-label="What is this?" title="What is this?">i</button><div class="info-bubble" role="tooltip">
+            <p class="tip-title">Trade-in Value</p>
+            <p class="tip-text">The amount that a dealership will offer for your current vehicle when you trade it in as a partial payment towards the vehicle you want to purchase or lease.</p>
+          </div></span></span>
           <input type="number" id="trade_in_value" min="0" step="100" />
         </label>
       </div>
@@ -1941,10 +1995,12 @@
                 <section class="section-block">
                   <div class="section-title">Loan Totals</div>
                   <div class="grid two-col">
-                    <div class="metric"><span class="label">Total paid (P&I)</span><span class="value" id="out_total_paid">$0</span></div>
-                    <div class="metric"><span class="label">Total interest paid</span><span class="value" id="out_total_interest">$0</span></div>
-                    <div class="metric"><span class="label">Months to payoff</span><span class="value" id="out_months_to_payoff">0</span></div>
-                    <div class="metric"><span class="label">Payoff date</span><span class="value" id="out_payoff_date">—</span></div>
+                    <div class="metric"><span class="label">Sales Tax</span><span class="value" id="out_sales_tax">$0</span></div>
+                    <div class="metric"><span class="label">Upfront Payment</span><span class="value" id="out_upfront_payment">$0</span></div>
+                    <div class="metric"><span class="label">Total of Loan Payments</span><span class="value" id="out_total_payments">$0</span></div>
+                    <div class="metric"><span class="label">Total Loan Interest</span><span class="value" id="out_total_interest">$0</span></div>
+                    <div class="metric"><span class="label">Total Cost (Price + Interest + Tax/Fees)</span><span class="value" id="out_total_cost">$0</span></div>
+                    <div class="metric"><span class="label">Payoff Date</span><span class="value" id="out_payoff_date">—</span></div>
                   </div>
                 </section>
                 <section class="section-block">
@@ -2005,6 +2061,7 @@
         let closingEdited = false;
         let rateEdited = false;
         let autoSalesTaxEdited = false; // tracks manual edits to sales_tax_pct
+        let isSettingDefaults = false; // flag to prevent saving defaults as user input during initialization
 
         const clampNonNegative = (value) => {
           const num = toNumber(value);
@@ -2273,6 +2330,10 @@
             extra_principal_monthly,
             extra_start_month_index,
             pmi_pct,
+            auto_price_computed,
+            calculate_by_payment,
+            is_lease,
+            residual_value,
           } = params;
 
           const baseLoan = compute_base_loan_amount(home_value, down_payment_value, down_payment_pct);
@@ -2344,6 +2405,10 @@
               extra_principal_monthly: clampNonNegative(extra_principal_monthly),
               extra_start_month_index: Math.max(Math.round(toNumber(extra_start_month_index)), 0),
               pmi_pct: pmiPct,
+              auto_price_computed,
+              calculate_by_payment,
+              is_lease,
+              residual_value,
             },
             derived: {
               loan_amount_base: baseLoan.loan_amount_base,
@@ -2490,56 +2555,66 @@
           title_fees: 400,
           include_taxes_fees: false,
           state: '',
+          monthly_payment: 500,
+          residual_value: 24000,
         };
 
         const setAutoDefaultsIfEmpty = (force = false) => {
-          const rateFromPill = getRateFromPill();
-          if (rateFromPill != null) autoDefaults.interest_rate_pct = rateFromPill;
-          const setIfEmpty = (id, val) => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            if (el.type === 'checkbox') {
-              if (force || el.checked === false) el.checked = Boolean(val);
-              return;
-            }
-            const cur = String(el.value || '').trim();
-            const asNum = Number(cur);
-            if (force || cur === '' || (!Number.isNaN(asNum) && asNum === 0)) {
-              el.value = String(val ?? '');
-            }
-          };
-          // Down payment default: 10% of auto price when value is empty, zero, non-numeric, or exceeds price
+          // Prevent saving to local storage while setting defaults
+          isSettingDefaults = true;
           try {
-            const priceEl = document.getElementById('auto_price');
-            const dpEl = document.getElementById('down_payment_value');
-            let basePrice = autoDefaults.auto_price;
-            if (priceEl) {
-              const parsed = Number(priceEl.value || '');
-              if (Number.isFinite(parsed) && parsed > 0) basePrice = parsed;
-            }
-            const dpDefault = Math.round(basePrice * 0.10);
-            if (dpEl) {
-              const curStr = String(dpEl.value || '').trim();
-              const curNum = Number(curStr || '0');
-              const invalid = !Number.isFinite(curNum) || curNum <= 0 || (basePrice > 0 && curNum > basePrice);
-              if (force || invalid) {
-                dpEl.value = String(dpDefault);
+            const rateFromPill = getRateFromPill();
+            if (rateFromPill != null) autoDefaults.interest_rate_pct = rateFromPill;
+            const setIfEmpty = (id, val) => {
+              const el = document.getElementById(id);
+              if (!el) return;
+              if (el.type === 'checkbox') {
+                if (force || el.checked === false) el.checked = Boolean(val);
+                return;
               }
-            } else {
-              setIfEmpty('down_payment_value', dpDefault);
-            }
-          } catch (_) {}
-          Object.entries(autoDefaults).forEach(([k,v]) => {
-            if (k === 'down_payment_value') return;
-            setIfEmpty(k, v);
-          });
-          const dpEl = document.getElementById('down_payment_value');
-          if (dpEl) {
+              const cur = String(el.value || '').trim();
+              const asNum = Number(cur);
+              if (force || cur === '' || (!Number.isNaN(asNum) && asNum === 0)) {
+                el.value = String(val ?? '');
+              }
+            };
+            // Down payment default: 10% of auto price when value is empty, zero, non-numeric, or exceeds price
             try {
-              dpEl.dispatchEvent(new Event('input', { bubbles: true }));
-            } catch (_) {
-              try { dpEl.dispatchEvent(new Event('input')); } catch (_) {}
-            }
+              const priceEl = document.getElementById('auto_price');
+              const dpEl = document.getElementById('down_payment_value');
+              let basePrice = autoDefaults.auto_price;
+              if (priceEl) {
+                const parsed = Number(priceEl.value || '');
+                if (Number.isFinite(parsed) && parsed > 0) basePrice = parsed;
+              }
+              const dpDefault = Math.round(basePrice * 0.10);
+              if (dpEl) {
+                const curStr = String(dpEl.value || '').trim();
+                const curNum = Number(curStr || '0');
+                const invalid = !Number.isFinite(curNum) || curNum <= 0 || (basePrice > 0 && curNum > basePrice);
+                if (force || invalid) {
+                  dpEl.value = String(dpDefault);
+                }
+              } else {
+                setIfEmpty('down_payment_value', dpDefault);
+              }
+            } catch (_) {}
+            Object.entries(autoDefaults).forEach(([k,v]) => {
+              if (k === 'down_payment_value') return;
+              setIfEmpty(k, v);
+            });
+            
+            // Sync sliders after defaults
+            const dpEl = document.getElementById('down_payment_value');
+            if (dpEl) { try { dpEl.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {} }
+            
+            const mpEl = document.getElementById('monthly_payment');
+            if (mpEl) { try { mpEl.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {} }
+
+            const priceEl = document.getElementById('auto_price');
+            if (priceEl) { try { priceEl.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {} }
+          } finally {
+            isSettingDefaults = false;
           }
         };
 
@@ -2737,9 +2812,11 @@
           y1_ending_balance_monthly: $("y1_ending_balance_monthly"),
           y1_ending_balance: $("y1_ending_balance"),
           // Loan Totals
-          out_total_paid: $("out_total_paid"),
+          out_sales_tax: $("out_sales_tax"),
+          out_upfront_payment: $("out_upfront_payment"),
+          out_total_payments: $("out_total_payments"),
           out_total_interest: $("out_total_interest"),
-          out_months_to_payoff: $("out_months_to_payoff"),
+          out_total_cost: $("out_total_cost"),
           out_payoff_date: $("out_payoff_date"),
           // Amortization table body
           overTimeTableBody: (document.querySelector('#overTimeTable tbody')),
@@ -2803,6 +2880,54 @@
           }
           console.debug(`[mortgage-telemetry] ${event}`, detail);
         };
+
+        // --- Frontend error reporting (matches prior projects) ---
+        (() => {
+          const TRACK_ENDPOINTS = [
+            'https://mortgage-calculator-open-ai.onrender.com/api/track',
+            'http://localhost:8000/api/track',
+            '/api/track',
+          ];
+          let lastErrorSignature = '';
+          const reportError = async (payload) => {
+            const signature = JSON.stringify(payload).slice(0, 500);
+            if (signature === lastErrorSignature) return;
+            lastErrorSignature = signature;
+            for (const url of TRACK_ENDPOINTS) {
+              try {
+                await fetch(url, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  mode: 'cors',
+                  body: JSON.stringify({ event: 'frontend_error', data: payload }),
+                });
+                break;
+              } catch (_) {
+                // try next endpoint
+              }
+            }
+          };
+          window.addEventListener('error', (event) => {
+            if (!event) return;
+            reportError({
+              message: event.message || 'Unknown error',
+              filename: event.filename || '',
+              lineno: event.lineno || 0,
+              colno: event.colno || 0,
+              stack: event.error?.stack || '',
+              userAgent: navigator.userAgent,
+            });
+          }, true);
+          window.addEventListener('unhandledrejection', (event) => {
+            if (!event) return;
+            const reason = event.reason;
+            reportError({
+              message: typeof reason === 'string' ? reason : reason?.message || 'Unhandled rejection',
+              stack: reason?.stack || '',
+              userAgent: navigator.userAgent,
+            });
+          });
+        })();
 
         // Lightweight toast notifications for success/failure messages
         const getToastContainer = () => {
@@ -2941,7 +3066,7 @@
 
         const readParams = () => {
           // New Auto Loan inputs
-          const price = toNumber(document.getElementById('auto_price')?.value || 0);
+          let price = toNumber(document.getElementById('auto_price')?.value || 0);
           const rateRaw = toNumber(document.getElementById('interest_rate_pct')?.value || 0);
           const termMonths = Math.max(1, Math.round(toNumber(document.getElementById('loan_term_months')?.value || 60)));
           const downPayment = Math.max(0, toNumber(document.getElementById('down_payment_value')?.value || 0));
@@ -2953,6 +3078,53 @@
           const includeTaxesFees = Boolean((document.getElementById('include_taxes_fees')||{}).checked);
           const loanRadio = document.getElementById('purchase_type_loan');
           const usingLoan = !!(loanRadio && loanRadio.checked);
+          const isLease = !usingLoan;
+          
+          const calculateByPayment = !!document.getElementById('calculate_by_payment')?.checked;
+          const monthlyPaymentInput = toNumber(document.getElementById('monthly_payment')?.value || 0);
+          const residualValue = toNumber(document.getElementById('residual_value')?.value || 0);
+
+          // Map into existing calculation fields
+          // Accept either percent (e.g., 5) or decimal (e.g., 0.05)
+          const rateAprDec = (rateRaw > 1 ? rateRaw / 100 : rateRaw);
+          const termYears = Math.max(0.1, termMonths / 12);
+
+          if (calculateByPayment && usingLoan) {
+             // ... existing reverse loan logic ...
+             const n = termMonths;
+             const r = rateAprDec / 12;
+             let principal = 0;
+             if (r === 0) {
+                 principal = monthlyPaymentInput * n;
+             } else {
+                 const f = Math.pow(1 + r, n);
+                 principal = monthlyPaymentInput * (f - 1) / (r * f);
+             }
+             
+             const taxRate = salesTaxPct / 100;
+             const effTaxRate = includeTaxesFees ? taxRate : 0;
+             const effFees = includeTaxesFees ? titleFees : 0;
+             const effTaxDeduction = includeTaxesFees ? (taxRate * (incentives + tradeValue)) : 0;
+             
+             const numerator = principal + incentives + downPayment + tradeValue - tradeOwed + effTaxDeduction - effFees;
+             price = Math.max(0, numerator / (1 + effTaxRate));
+          } else if (calculateByPayment && isLease) {
+             const totalMonthly = monthlyPaymentInput;
+             const taxRate = salesTaxPct / 100;
+             const baseMonthly = totalMonthly / (1 + taxRate); // strip monthly tax
+             const term = termMonths;
+             const moneyFactor = (rateAprDec * 100) / 2400; // APR -> money factor
+             const depreciationFactor = 1 / term;
+             const rentFactor = moneyFactor;
+
+             const numerator = baseMonthly - residualValue * (rentFactor - depreciationFactor);
+             const denom = depreciationFactor + rentFactor;
+             const adjCapCost = numerator / denom;
+
+             const netTrade = tradeValue - tradeOwed;
+             const capReductions = downPayment + Math.max(0, netTrade) + incentives;
+             price = Math.max(0, adjCapCost + capReductions);
+          }
 
           // Compute financed principal according to auto rules
           const priceAfterIncentives = Math.max(0, price - incentives);
@@ -2963,14 +3135,13 @@
           const baseToFinance = usingLoan ? Math.max(0, priceAfterIncentives - downPayment - signedNetTrade) : 0;
           const principal = usingLoan ? Math.max(0, baseToFinance + financedExtras) : 0;
 
-          // Map into existing calculation fields
-          // Accept either percent (e.g., 5) or decimal (e.g., 0.05)
-          const rateAprDec = (rateRaw > 1 ? rateRaw / 100 : rateRaw);
-          const termYears = Math.max(0.1, termMonths / 12);
-
           return {
             loan_type: 'conventional',
             home_value: principal, // treat principal as home_value to reuse engine
+            auto_price_computed: price, // pass computed price for UI
+            calculate_by_payment: calculateByPayment,
+            is_lease: isLease,
+            residual_value: residualValue,
             down_payment_value: 0,
             down_payment_pct: 0,
             rate_apr: rateAprDec,
@@ -3009,7 +3180,7 @@
           denominator === 0 ? 0 : numerator / denominator;
 
         const renderSummary = (calc) => {
-          const { derived, totals, payoff_date } = calc;
+          const { derived, totals, payoff_date, inputs } = calc;
           const payment = derived.p_and_i || 0;
           const principal0 = derived.principal_0 || 0;
           const months = calc.schedule.length || 0;
@@ -3018,10 +3189,46 @@
           const safeSet = (el, val) => { if (el) el.textContent = val; };
 
           // Overview card
-          safeSet(outputs.year1_income_value, formatCurrency(payment));
-          safeSet(outputs.year1_income_monthly_sub, '/mo');
-          safeSet(outputs.year1_cashflow_value, formatCurrency(principal0));
-          safeSet(outputs.year1_cashflow_monthly_sub, payoffLabel);
+          if (inputs.calculate_by_payment) {
+            // Reverse mode: Show Vehicle Cost (Price)
+            if (monthlyPaymentCard) {
+              const topLabel = monthlyPaymentCard.querySelector('.split-col:first-child .label');
+              if (topLabel) topLabel.textContent = 'Vehicle Price';
+            }
+            safeSet(outputs.year1_income_value, formatCurrency(inputs.auto_price_computed || 0));
+            safeSet(outputs.year1_income_monthly_sub, '');
+          } else {
+            // Normal mode: Show Monthly Payment
+            if (monthlyPaymentCard) {
+              const topLabel = monthlyPaymentCard.querySelector('.split-col:first-child .label');
+              if (topLabel) topLabel.textContent = inputs.is_lease ? 'Monthly Payment (Lease)' : 'Monthly Payment (P&I)';
+            }
+            safeSet(outputs.year1_income_value, formatCurrency(payment));
+            safeSet(outputs.year1_income_monthly_sub, '/mo');
+          }
+
+          if (inputs.is_lease) {
+             // LEASE MODE Adjustments for Summary Card
+             // Secondary metric: Adjusted Cap Cost
+             if (monthlyPaymentCard) {
+                const bottomLabel = monthlyPaymentCard.querySelector('.split-col:last-child .label');
+                const bottomHint = monthlyPaymentCard.querySelector('.split-col:last-child .hint');
+                if (bottomLabel) bottomLabel.textContent = 'Adjusted Cap Cost';
+                if (bottomHint) bottomHint.textContent = 'Net capitalized cost';
+             }
+             safeSet(outputs.year1_cashflow_value, formatCurrency(principal0)); // principal0 is reused for AdjCapCost in lease
+             safeSet(outputs.year1_cashflow_monthly_sub, '');
+          } else {
+             // LOAN MODE Adjustments
+             if (monthlyPaymentCard) {
+                const bottomLabel = monthlyPaymentCard.querySelector('.split-col:last-child .label');
+                const bottomHint = monthlyPaymentCard.querySelector('.split-col:last-child .hint');
+                if (bottomLabel) bottomLabel.textContent = 'Loan Amount';
+                if (bottomHint) bottomHint.textContent = 'Principal financed at origination';
+             }
+             safeSet(outputs.year1_cashflow_value, formatCurrency(principal0));
+             safeSet(outputs.year1_cashflow_monthly_sub, payoffLabel);
+          }
 
           if (monthlyPaymentCard) {
             monthlyPaymentCard.classList.remove('glow-animate');
@@ -3029,11 +3236,131 @@
             monthlyPaymentCard.classList.add('glow-animate');
           }
 
-          // KPIs on Outputs slide
-          safeSet(outputs.kpi_cashflow_annual, formatCurrency(payment));
-          safeSet(outputs.kpi_cashflow_monthly, '/mo');
+          // KPIs on Outputs slide (Slide 2)
+          const kpiLabel1 = document.querySelector('.kpi-item:first-child .kpi-label');
+          if (inputs.calculate_by_payment) {
+            // Reverse mode: Show Vehicle Cost (Price) as primary
+            if (kpiLabel1) kpiLabel1.textContent = 'Vehicle Cost';
+            safeSet(outputs.kpi_cashflow_annual, formatCurrency(inputs.auto_price_computed || 0));
+            safeSet(outputs.kpi_cashflow_monthly, '');
+          } else {
+            // Normal mode: Show Monthly Payment
+            if (kpiLabel1) kpiLabel1.textContent = inputs.is_lease ? 'Monthly Lease Payment' : 'Monthly Payment';
+            safeSet(outputs.kpi_cashflow_annual, formatCurrency(payment));
+            safeSet(outputs.kpi_cashflow_monthly, '/mo');
+          }
+
+          // Second KPI: Loan Amount / Adj Cap Cost
+          const kpiLabel2 = document.querySelector('.kpi-item:last-child .kpi-label');
+          if (kpiLabel2) kpiLabel2.textContent = inputs.is_lease ? 'Adjusted Cap Cost' : 'Loan Amount';
           safeSet(outputs.kpi_income_annual, formatCurrency(principal0));
-          safeSet(outputs.kpi_income_monthly, `${months}`);
+          safeSet(outputs.kpi_income_monthly, inputs.is_lease ? '' : `${months}`);
+
+          // --- SLIDE 2 SECTIONS VISIBILITY ---
+          // Hide/Show P&I Section (Donut + Table)
+          const piSection = document.querySelector('.year1-grid');
+          if (piSection) {
+             const donutRow = piSection.querySelector('.donut-row');
+             const tableWrap = piSection.querySelector('.metrics-table-wrap');
+             // Toggle display property directly to ensure visibility changes
+             if (donutRow) donutRow.style.display = inputs.is_lease ? 'none' : '';
+             if (tableWrap) tableWrap.style.display = inputs.is_lease ? 'none' : '';
+          }
+
+          // Hide/Show Monthly Schedule Section
+          const scheduleSection = document.querySelector('.outputs-vertical section:has(#monthlyScheduleChart)') || document.getElementById('monthlyScheduleChart')?.closest('section');
+          if (scheduleSection) {
+             scheduleSection.style.display = inputs.is_lease ? 'none' : '';
+          }
+
+          // Loan/Lease Totals Section Rename and Populate
+          const totalsSection = document.getElementById('out_total_cost')?.closest('section');
+          
+          if (totalsSection) {
+             const title = totalsSection.querySelector('.section-title');
+             if (title) title.textContent = inputs.is_lease ? 'Auto Lease Totals' : 'Loan Totals';
+             
+             if (inputs.is_lease) {
+                // LEASE TOTALS Logic
+                const dep = derived.depreciation_monthly || 0;
+                const rent = derived.rent_charge_monthly || 0;
+                const tax = derived.tax_monthly || 0;
+                const down = toNumber(document.getElementById('down_payment_value')?.value || 0);
+                const upfrontTax = derived.upfront_tax || 0; 
+                const residualTax = derived.residual_tax || 0;
+                const term = inputs.term_years * 12;
+                const totalPayments = payment * term;
+                // Total Cost to Own = Total Lease Payments + Down + Upfront Tax + Residual + Tax on Residual
+                const totalCostOwn = totalPayments + down + upfrontTax + inputs.residual_value + residualTax; 
+                
+                // Reconstruct grid for Lease
+                const grid = totalsSection.querySelector('.grid');
+                if (grid) {
+                   grid.innerHTML = `
+                     <div class="metric"><span class="label">Monthly Depreciation</span><span class="value">${formatCurrency(dep)}</span></div>
+                     <div class="metric"><span class="label">Monthly Interest</span><span class="value">${formatCurrency(rent)}</span></div>
+                     <div class="metric"><span class="label">Monthly Tax</span><span class="value">${formatCurrency(tax)}</span></div>
+                     <div class="metric"><span class="label">Down Payment</span><span class="value">${formatCurrency(down)}</span></div>
+                     <div class="metric"><span class="label">Upfront Tax</span><span class="value">${formatCurrency(upfrontTax)}</span></div>
+                     <div class="metric"><span class="label">Total ${term} Lease Payments</span><span class="value">${formatCurrency(totalPayments)}</span></div>
+                     <div class="metric full-width"><span class="label">Total Cost to Own After Lease Ends</span><span class="value">${formatCurrency(totalCostOwn)}</span></div>
+                   `;
+                   grid.classList.remove('two-col');
+                   grid.style.display = 'grid';
+                   grid.style.gridTemplateColumns = '1fr 1fr';
+                   grid.style.gap = '16px';
+                   // Add custom style for full-width last item
+                   const full = grid.querySelector('.full-width');
+                   if (full) full.style.gridColumn = '1 / -1';
+                }
+             } else {
+                // LOAN TOTALS Logic (Restore original structure)
+                const price = inputs.auto_price_computed || 0;
+                const incentives = toNumber(document.getElementById('cash_incentives')?.value || 0);
+                const tradeValue = toNumber(document.getElementById('trade_in_value')?.value || 0);
+                const tradeOwed = toNumber(document.getElementById('trade_in_owed')?.value || 0);
+                const salesTaxPct = toNumber(document.getElementById('sales_tax_pct')?.value || 0);
+                const titleFees = toNumber(document.getElementById('title_fees')?.value || 0);
+                
+                const priceAfterIncentives = Math.max(0, price - incentives);
+                const taxableBase = Math.max(0, priceAfterIncentives - Math.max(0, tradeValue));
+                const salesTaxAmount = (salesTaxPct / 100) * taxableBase;
+                
+                const downPayment = toNumber(document.getElementById('down_payment_value')?.value || 0);
+                const includeTaxesFees = (document.getElementById('include_taxes_fees')||{}).checked;
+                let upfront = downPayment;
+                if (!includeTaxesFees) {
+                   upfront += salesTaxAmount + titleFees;
+                }
+                
+                const totalLoanPayments = totals.payments; 
+                const totalInterest = totals.interest;
+                const totalCost = price + totalInterest + salesTaxAmount + titleFees; 
+
+                const grid = totalsSection.querySelector('.grid');
+                if (grid && (!grid.querySelector('#out_sales_tax') || grid.textContent.includes('Depreciation'))) {
+                   grid.innerHTML = `
+                    <div class="metric"><span class="label">Sales Tax</span><span class="value" id="out_sales_tax">${formatCurrency(salesTaxAmount)}</span></div>
+                    <div class="metric"><span class="label">Upfront Payment</span><span class="value" id="out_upfront_payment">${formatCurrency(upfront)}</span></div>
+                    <div class="metric"><span class="label">Total of Loan Payments</span><span class="value" id="out_total_payments">${formatCurrency(totalLoanPayments)}</span></div>
+                    <div class="metric"><span class="label">Total Loan Interest</span><span class="value" id="out_total_interest">${formatCurrency(totalInterest)}</span></div>
+                    <div class="metric"><span class="label">Total Cost (Price + Interest + Tax/Fees)</span><span class="value" id="out_total_cost">${formatCurrency(totalCost)}</span></div>
+                    <div class="metric"><span class="label">Payoff Date</span><span class="value" id="out_payoff_date">${payoffLabel}</span></div>
+                   `;
+                   grid.classList.add('two-col');
+                   grid.style.display = ''; 
+                   grid.style.gridTemplateColumns = '';
+                   grid.style.gap = '';
+                } else {
+                   safeSet(outputs.out_sales_tax, formatCurrency(salesTaxAmount));
+                   safeSet(outputs.out_upfront_payment, formatCurrency(upfront));
+                   safeSet(outputs.out_total_payments, formatCurrency(totalLoanPayments));
+                   safeSet(outputs.out_total_interest, formatCurrency(totalInterest));
+                   safeSet(outputs.out_total_cost, formatCurrency(totalCost));
+                   safeSet(outputs.out_payoff_date, payoffLabel);
+                }
+             }
+          }
 
           // Year 1 aggregates from schedule
           const y1 = calc.schedule.slice(0, 12);
@@ -3535,8 +3862,73 @@
           console.log('[DEBUG] Reading params...');
           const params = readParams();
           console.log('[DEBUG] Params:', params);
-          console.log('[DEBUG] Calling calculate_mortgage...');
-          const calc = mortgageCalculator.calculate_mortgage(params);
+          
+          let calc;
+          
+          // Lease Calculation Logic
+          if (params.is_lease) {
+             // Inputs
+             const price = params.auto_price_computed;
+             const down = toNumber(document.getElementById('down_payment_value')?.value || 0);
+             const tradeVal = toNumber(document.getElementById('trade_in_value')?.value || 0);
+             const tradeOwed = toNumber(document.getElementById('trade_in_owed')?.value || 0);
+             const incentives = toNumber(document.getElementById('cash_incentives')?.value || 0);
+             const taxPct = toNumber(document.getElementById('sales_tax_pct')?.value || 0);
+             // const titleFees = toNumber(document.getElementById('title_fees')?.value || 0); // Fees usually upfront in simple calc
+             const residual = params.residual_value;
+             const termMonths = Math.max(1, Math.round(toNumber(document.getElementById('loan_term_months')?.value || 36)));
+             const rate = params.rate_apr * 100; // rate_apr is decimal in params (e.g. 0.05), we need percent (5) for MF calc logic or stick to decimal?
+             // Actually, readParams converts rateRaw to decimal (0.05).
+             // Money Factor = APR / 2400 (where APR is percent, e.g. 5). Or APR_decimal / 24.
+             const moneyFactor = (params.rate_apr * 100) / 2400; 
+             
+             // Adjusted Cap Cost
+             const netTrade = tradeVal - tradeOwed;
+             const capReductions = down + netTrade + incentives;
+             const adjCapCost = Math.max(0, price - capReductions);
+             
+             // Depreciation Fee
+             const depreciation = Math.max(0, (adjCapCost - residual) / termMonths);
+             
+             // Finance Fee (Rent Charge)
+             const financeFee = (adjCapCost + residual) * moneyFactor;
+             
+             // Base Monthly
+             const baseMonthly = depreciation + financeFee;
+             
+             // Monthly Tax
+             // Reference logic: Tax on Monthly Payment stream AND Tax on Down Payment upfront.
+             const monthlyTax = baseMonthly * (taxPct / 100);
+             
+             const totalMonthly = baseMonthly + monthlyTax;
+             
+             // Upfront Tax on Down Payment (Capitalized Cost Reduction)
+             // Matching reference: Down * TaxRate
+             const upfrontTax = down * (taxPct / 100);
+
+             // Residual Tax (if purchased at end)
+             const residualTax = residual * (taxPct / 100);
+             
+             // Reuse mortgage engine for structure, then override
+             calc = mortgageCalculator.calculate_mortgage(params);
+             
+             // Overrides
+             calc.derived.p_and_i = totalMonthly;
+             calc.derived.principal_0 = adjCapCost; // Show Adj Cap Cost as "Loan Amount" equivalent for UI
+             calc.totals.payments = totalMonthly * termMonths;
+             calc.totals.interest = financeFee * termMonths; // Total Rent Charge
+             
+             // Store specific values for breakdown
+             calc.derived.tax_monthly = monthlyTax; 
+             calc.derived.depreciation_monthly = depreciation;
+             calc.derived.rent_charge_monthly = financeFee;
+             calc.derived.upfront_tax = upfrontTax; 
+             calc.derived.residual_tax = residualTax;
+             
+          } else {
+             calc = mortgageCalculator.calculate_mortgage(params);
+          }
+
           console.log('[DEBUG] Calc result:', calc);
           console.log('[DEBUG] Calling renderSummary...');
           try {
@@ -3546,6 +3938,17 @@
             console.error('[DEBUG] ERROR in renderSummary:', err);
             console.error('[DEBUG] Stack:', err.stack);
           }
+          
+          // Update UI Labels for Lease
+          if (params.is_lease) {
+             const kpiLabel = document.querySelector('.kpi-item:first-child .kpi-label');
+             if (kpiLabel) kpiLabel.textContent = 'Monthly Payment (Lease)';
+             const kpiLabel2 = document.querySelector('.kpi-item:last-child .kpi-label');
+             if (kpiLabel2) kpiLabel2.textContent = 'Adjusted Cap Cost';
+          } else {
+             // Labels are reset in renderSummary based on normal logic, but double check
+          }
+
           // New outputs: loan totals, over-time table, PI donut
           renderInvestmentSummary(calc);
           renderOverTimeTable(calc);
@@ -3760,6 +4163,28 @@
           recalcButton.addEventListener("click", calculateAndRender);
         }
 
+        // Toggle between Calculate by Price vs Payment
+        const toggleCalculateBy = () => {
+          const byPayment = document.getElementById('calculate_by_payment')?.checked;
+          const priceLabel = document.getElementById('auto_price_label');
+          const paymentLabel = document.getElementById('monthly_payment_label');
+          
+          if (byPayment) {
+            priceLabel?.classList.add('is-hidden');
+            paymentLabel?.classList.remove('is-hidden');
+          } else {
+            priceLabel?.classList.remove('is-hidden');
+            paymentLabel?.classList.add('is-hidden');
+          }
+          calculateAndRender();
+        };
+
+        document.querySelectorAll('input[name="calculate_by"]').forEach(el => {
+          el.addEventListener('change', toggleCalculateBy);
+        });
+        // Initial sync
+        toggleCalculateBy();
+
         inputs.loan_type.addEventListener("change", () => {
           mergeProgramDefaults();
           calculateAndRender();
@@ -3767,13 +4192,12 @@
 
         // ---------- Persisted user inputs (72h) via Apps SDK widgetState with localStorage fallback ----------
         const PERSIST_KEY = "alc_user_inputs_state_v1";
-        const PERSIST_TTL_MS = 72 * 60 * 60 * 1000;
+        const PERSIST_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
         const PERSIST_INPUT_IDS = [
           'auto_price', 'title_fees', 'down_payment_value', 'interest_rate_pct', 'loan_term_months',
           'cash_incentives', 'trade_in_value', 'trade_in_owed',
-          'state', 'sales_tax_pct', 'include_taxes_fees',
-          'purchase_type_loan', 'purchase_type_lease'
+          'state', 'sales_tax_pct', 'monthly_payment', 'residual_value'
         ];  
 
         const readToggleValue = (yesId, noId) => {
@@ -3795,7 +4219,11 @@
             toggles: {
               use_loan: readToggleValue('use_loan_yes','use_loan_no'),
               need_repairs: readToggleValue('need_repairs_yes','need_repairs_no'),
-              price_mode: (document.getElementById('price_mode_price')?.checked ? 'price' : 'appreciation')
+              price_mode: (document.getElementById('price_mode_price')?.checked ? 'price' : 'appreciation'),
+              // Auto Loan Toggles
+              calculate_by: (document.getElementById('calculate_by_payment')?.checked ? 'payment' : 'price'),
+              purchase_type: (document.getElementById('purchase_type_lease')?.checked ? 'lease' : 'loan'),
+              include_taxes_fees: !!(document.getElementById('include_taxes_fees')?.checked)
             }
           };
           return state;
@@ -3814,6 +4242,17 @@
           } catch(_) { /* no-op */ }
         };
 
+        const purgeSavedState = () => {
+          try {
+            if (window?.openai?.setWidgetState) {
+              const base = window?.openai?.widgetState ? { ...window.openai.widgetState } : {};
+              delete base.rentalInputsState;
+              window.openai.setWidgetState(base);
+            }
+          } catch (_) {}
+          try { localStorage.removeItem(PERSIST_KEY); } catch (_) {}
+        };
+
         const loadUserInputsState = () => {
           let state = null;
           // First, try the official widgetState (scoped to this widget instance)
@@ -3822,8 +4261,11 @@
           if (!state) {
             try { state = JSON.parse(localStorage.getItem(PERSIST_KEY) || 'null'); } catch(_) { state = null; }
           }
-          // If still no state, or it's expired, return null
-          if (!state || !state.savedAt || (Date.now() - state.savedAt) > PERSIST_TTL_MS) return null;
+          // If still no state, or it's expired, purge and return null
+          if (!state || !state.savedAt || (Date.now() - state.savedAt) > PERSIST_TTL_MS) {
+            purgeSavedState();
+            return null;
+          }
           return state;
         };
 
@@ -3873,25 +4315,58 @@
             const pmPrice = document.getElementById('price_mode_price');
             const pmApp = document.getElementById('price_mode_appreciation');
             if (pmPrice && pmApp) { pmPrice.checked = priceOn; pmApp.checked = !priceOn; }
+
+            // Auto Loan Toggles restoration
+            if (state.toggles?.calculate_by) {
+              const isPayment = state.toggles.calculate_by === 'payment';
+              const cbPayment = document.getElementById('calculate_by_payment');
+              const cbPrice = document.getElementById('calculate_by_price');
+              if (cbPayment && cbPrice) {
+                cbPayment.checked = isPayment;
+                cbPrice.checked = !isPayment;
+                // Trigger change event to update UI visibility
+                cbPayment.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            }
+            if (state.toggles?.purchase_type) {
+              const isLease = state.toggles.purchase_type === 'lease';
+              const ptLease = document.getElementById('purchase_type_lease');
+              const ptLoan = document.getElementById('purchase_type_loan');
+              if (ptLease && ptLoan) {
+                ptLease.checked = isLease;
+                ptLoan.checked = !isLease;
+              }
+            }
+            if (typeof state.toggles?.include_taxes_fees !== 'undefined') {
+               const inc = document.getElementById('include_taxes_fees');
+               if (inc) inc.checked = !!state.toggles.include_taxes_fees;
+            }
+
           } catch(_) {}
+          
+          // Trigger input events on all hydrated fields to ensure sliders/UI sync
+          entries.forEach(([id]) => {
+             const el = document.getElementById(id);
+             if (el) el.dispatchEvent(new Event('input', { bubbles: true }));
+          });
+          
           return true;
         };
 
         const clearUserInputsState = () => {
-          try {
-            if (window?.openai?.setWidgetState) {
-              const base = (window?.openai?.widgetState) ? { ...window.openai.widgetState } : {};
-              delete base.rentalInputsState;
-              window.openai.setWidgetState(base);
-            }
-          } catch(_) {}
-          try { localStorage.removeItem(PERSIST_KEY); } catch(_) {}
+          purgeSavedState();
         };
 
         const bindRecalc = (id, evt = 'input') => {
           const el = document.getElementById(id);
           if (!el) return;
           el.addEventListener(evt, () => {
+            // Don't flag as user edit or save state if we are just initializing defaults
+            if (isSettingDefaults) {
+               calculateAndRender();
+               return;
+            }
+
             didUserEdit = true;
             if (id === 'interest_rate_pct' || id === 'loan_rate_slider') rateEdited = true;
             if (id === 'exp_property_tax_annual') taxEdited = true;
@@ -3916,7 +4391,7 @@
           'sell_price','holding_length_years','cost_to_sell_pct','value_appreciation_pct',
           // Auto loan inputs (new)
           'auto_price','down_payment_value','interest_rate_pct','loan_term_months','cash_incentives',
-          'trade_in_value','trade_in_owed','sales_tax_pct','title_fees','state'
+          'trade_in_value','trade_in_owed','sales_tax_pct','title_fees','state','monthly_payment','residual_value'
         ].forEach((id) => bindRecalc(id, 'input'));
         // Radios / toggles
         ['use_loan_yes','use_loan_no','need_repairs_yes','need_repairs_no','know_sell_price_yes','know_sell_price_no','price_mode_price','price_mode_appreciation','purchase_type_loan','purchase_type_lease','include_taxes_fees']
@@ -3964,13 +4439,34 @@
 
           setupDollarSlider('auto_price', 'auto_price_slider', 'auto_price_slider_display', 0, 150000, 100);
           setupDollarSlider('down_payment_value', 'auto_down_payment_slider', 'auto_down_payment_slider_display', 0, 50000, 100);
-          // Ensure DP slider cannot exceed Auto Price
+          setupDollarSlider('monthly_payment', 'monthly_payment_slider', 'monthly_payment_slider_display', 0, 2000, 10);
+          // Ensure DP slider cannot exceed Auto Price (only in Price mode)
           const apNum = document.getElementById('auto_price');
           const apSlider = document.getElementById('auto_price_slider');
           const dpSlider = document.getElementById('auto_down_payment_slider');
           const dpNum = document.getElementById('down_payment_value');
+          const calcByPaymentEl = document.getElementById('calculate_by_payment');
+          
           const clampDp = () => {
             if (!apNum || !dpSlider || !dpNum) return;
+            const inPaymentMode = calcByPaymentEl && calcByPaymentEl.checked;
+            
+            if (inPaymentMode) {
+              // In Payment mode, Down Payment is an input that increases the affordability.
+              // It shouldn't be capped by the Auto Price input (which is hidden/stale).
+              // Let's set a reasonable max or leave it as initialized (e.g. 50k).
+              // If we previously clamped it down, we might need to restore the max.
+              if (Number(dpSlider.max) < 50000) dpSlider.max = "50000";
+              return;
+            }
+
+            // In Price mode, Down Payment cannot exceed Price
+            const isPaymentMode = document.getElementById('calculate_by_payment')?.checked;
+            if (isPaymentMode) {
+                 dpSlider.max = "200000";
+                 return;
+            }
+            
             const ap = Number(apNum.value || 0);
             dpSlider.max = String(Math.max(0, ap));
             if (Number(dpSlider.value) > ap) {
@@ -3983,6 +4479,10 @@
           };
           if (apNum) apNum.addEventListener('input', clampDp);
           if (apSlider) apSlider.addEventListener('input', clampDp);
+          // Also re-check clamping when toggle changes
+          document.querySelectorAll('input[name="calculate_by"]').forEach(el => {
+            el.addEventListener('change', clampDp);
+          });
           clampDp();
         })();
         updateMiVisibility();
@@ -3994,8 +4494,10 @@
         const stateEl = document.getElementById('state');
         if (stateEl) {
           stateEl.addEventListener('change', () => {
-            // Only update sales tax if the user has not manually overridden it
-            setSalesTaxFromState(false);
+            // When user explicitly changes state, always update sales tax to that state's default
+            setSalesTaxFromState(true);
+            // Reset the "manual edit" flag so future non-forced updates could theoretically work (though mainly we want to allow the state change to take effect now)
+            autoSalesTaxEdited = false;
             calculateAndRender();
             saveUserInputsState();
           });
@@ -4277,12 +4779,101 @@
 
         const toggleLoanFields = () => {
           const loan = document.getElementById('purchase_type_loan');
-          const show = !!(loan && loan.checked);
-          // Hide/show individual loan fields
-          qsa('.loan-field').forEach((el) => el.classList.toggle('is-hidden', !show));
+          const isLoan = !!(loan && loan.checked);
+          const isLease = !isLoan;
+          
+          // Toggle Lease vs Loan specific fields
+          document.querySelectorAll('.lease-only-field').forEach(el => el.classList.toggle('is-hidden', !isLease));
+          document.querySelectorAll('.loan-only-field').forEach(el => el.classList.toggle('is-hidden', !isLoan));
+          
+          // LAYOUT ADJUSTMENTS
+          const tradeInInput = document.getElementById('trade_in_value');
+          const tradeInLabel = tradeInInput ? tradeInInput.closest('label') : null;
+          
+          const salesTaxInput = document.getElementById('sales_tax_pct');
+          const salesTaxLabel = salesTaxInput ? salesTaxInput.closest('label') : null;
+          
+          const residualInput = document.getElementById('residual_value');
+          const residualLabel = residualInput ? residualInput.closest('label') : null;
+
+          const purchaseInputsRow = document.getElementById('purchase_inputs_row');
+          const tradeInDetailsDetails = document.querySelector('details[data-openai-component="trade-in-details"]');
+          const tradeInRow = document.getElementById('trade_in_row');
+          const taxesFeesRow = document.getElementById('taxes_fees_row');
+          const residualRow = document.getElementById('residual_row');
+
+          if (isLease) {
+             // LEASE MODE
+             
+             // 1. Move Trade-in Value to Purchase Details row
+             if (tradeInLabel && purchaseInputsRow && !purchaseInputsRow.contains(tradeInLabel)) {
+                purchaseInputsRow.appendChild(tradeInLabel);
+             }
+             
+             // 2. Move Sales Tax to Purchase Details row (right of Trade-in)
+             if (salesTaxLabel && purchaseInputsRow && !purchaseInputsRow.contains(salesTaxLabel)) {
+                purchaseInputsRow.appendChild(salesTaxLabel);
+             }
+             
+             // 3. Move Residual Value to where Sales Tax was (taxes_fees_row)
+             // We want it to be the first item in taxes_fees_row
+             if (residualLabel && taxesFeesRow) {
+                if (!taxesFeesRow.contains(residualLabel)) {
+                   taxesFeesRow.insertBefore(residualLabel, taxesFeesRow.firstChild);
+                }
+             }
+
+             // Hide Trade In Details section
+             if (tradeInDetailsDetails) tradeInDetailsDetails.classList.add('is-hidden');
+             
+             // Defaults logic: Set Term to 36 if it looks like a default switch
+             const termEl = document.getElementById('loan_term_months');
+             if (termEl && termEl.value === '60') { // Simple check to avoid overriding user custom input if not 60
+                 termEl.value = '36';
+                 // Also update slider if exists? Ideally dispatch input event but that triggers calc loop
+                 // We will let calculateAndRender handle it
+             }
+
+          } else {
+             // LOAN MODE
+             
+             // 1. Move Trade-in Value back to Trade In Details
+             if (tradeInLabel && tradeInRow && !tradeInRow.contains(tradeInLabel)) {
+                tradeInRow.appendChild(tradeInLabel);
+             }
+             
+             // 2. Move Sales Tax back to Taxes/Fees row
+             // It should be before the checkbox (which is likely the last child or we can prepend)
+             // Original layout: Sales Tax first, Checkbox second.
+             if (salesTaxLabel && taxesFeesRow) {
+                if (!taxesFeesRow.contains(salesTaxLabel)) {
+                   taxesFeesRow.insertBefore(salesTaxLabel, taxesFeesRow.firstChild);
+                }
+             }
+             
+             // 3. Move Residual Value back to its row (residual_row)
+             if (residualLabel && residualRow) {
+                if (!residualRow.contains(residualLabel)) {
+                   residualRow.appendChild(residualLabel);
+                }
+             }
+
+             // Show Trade In Details section
+             if (tradeInDetailsDetails) tradeInDetailsDetails.classList.remove('is-hidden');
+          }
+
+          // Update Term Label
+          const termLabel = document.querySelector('label[for="loan_term_months"]');
+          if (termLabel) {
+             const textNode = Array.from(termLabel.childNodes).find(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim().length > 0);
+             if (textNode) {
+                textNode.textContent = isLease ? 'Lease Term (months) ' : 'Loan Term (months) ';
+             }
+          }
+
           // Hide/show the entire loan details group
           const group = document.getElementById('loan_details_group');
-          if (group) group.classList.toggle('is-hidden', !show);
+          if (group) group.classList.toggle('is-hidden', !isLoan);
         };
 
         const toggleCalculationMode = () => {
@@ -4321,9 +4912,22 @@
         // Breakdown list is read-only; no input listeners needed.
 
         // Notify Me When Rates Drop
-        const notifyBtn = document.getElementById('notify-btn');
-        const notifyBtnBottom = document.getElementById('notify-btn-bottom');
+        const notifyBtn = document.getElementById('notifyRatesBtn');
+        const notifyBtnBottom = document.getElementById('notifyRatesBtnBottom');
 
+        const TURNSTILE_SITE_KEY = '__TURNSTILE_SITE_KEY__';
+        const TURNSTILE_ENABLED = Boolean(TURNSTILE_SITE_KEY && TURNSTILE_SITE_KEY !== '__TURNSTILE_SITE_KEY__');
+        let turnstileWidgetId = null;
+        let turnstileTokenValue = "";
+        let attachTurnstile = null;
+        const resetTurnstile = () => {
+          turnstileTokenValue = "";
+          if (typeof turnstile !== 'undefined' && turnstileWidgetId !== null) {
+            try {
+              turnstile.reset(turnstileWidgetId);
+            } catch (_) {}
+          }
+        };
 
         const SUBSCRIBE_KEY = "mc_rates_subscribed";
         const markSubscribed = () => {
@@ -4416,7 +5020,7 @@
 
           requestAnimationFrame(centerNotifyUnderRate);
           window.addEventListener('resize', centerNotifyUnderRate);
-          let overlay, emailInput, statusEl, cancelBtn, submitBtn;
+          let overlay, emailInput, statusEl, cancelBtn, submitBtn, captchaContainer;
 
           const ensureNotifyModal = () => {
             if (overlay) return;
@@ -4428,6 +5032,10 @@
                 <p>We'll email you when average rates drop.</p>
                 <input id="notifyEmail" type="email" placeholder="you@example.com" autocomplete="email" />
                 <div id="notifyStatus" class="modal-status"></div>
+                <div class="captcha-wrapper">
+                  <div id="notifyCaptcha" class="turnstile-placeholder" role="status" aria-live="polite"></div>
+                  <small class="captcha-footnote">Protected by Cloudflare Turnstile</small>
+                </div>
                 <div class="modal-actions">
                   <button type="button" id="notifyCancel">Cancel</button>
                   <button type="button" id="notifySubmit" class="primary">Notify me</button>
@@ -4438,12 +5046,65 @@
             statusEl = overlay.querySelector('#notifyStatus');
             cancelBtn = overlay.querySelector('#notifyCancel');
             submitBtn = overlay.querySelector('#notifySubmit');
+            captchaContainer = overlay.querySelector('#notifyCaptcha');
 
-            const onCancel = () => { overlay.style.display = 'none'; };
+            attachTurnstile = () => {
+              if (!captchaContainer) return;
+              if (!TURNSTILE_ENABLED) {
+                captchaContainer.textContent = 'Captcha not configured.';
+                captchaContainer.classList.add('captcha-error');
+                return;
+              }
+              if (typeof turnstile === 'undefined') {
+                captchaContainer.textContent = 'Loading captcha…';
+                return;
+              }
+              if (turnstileWidgetId !== null) {
+                resetTurnstile();
+                return;
+              }
+              try {
+                turnstileWidgetId = turnstile.render(captchaContainer, {
+                  sitekey: TURNSTILE_SITE_KEY,
+                  callback: (token) => {
+                    turnstileTokenValue = token;
+                    if (statusEl) statusEl.textContent = '';
+                  },
+                  'expired-callback': () => {
+                    turnstileTokenValue = '';
+                    if (statusEl) statusEl.textContent = 'Captcha expired. Please try again.';
+                  },
+                  'error-callback': () => {
+                    turnstileTokenValue = '';
+                    if (statusEl) statusEl.textContent = 'Captcha error. Please reload.';
+                  },
+                });
+              } catch (err) {
+                captchaContainer.textContent = 'Captcha failed to initialize.';
+                captchaContainer.classList.add('captcha-error');
+              }
+            };
+
+            const onCancel = () => {
+              overlay.style.display = 'none';
+              resetTurnstile();
+            };
             cancelBtn.addEventListener('click', onCancel);
             overlay.addEventListener('click', (e) => { if (e.target === overlay) onCancel(); });
             emailInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
             submitBtn.addEventListener('click', () => submit());
+
+            if (TURNSTILE_ENABLED) {
+              if (window.__TURNSTILE_LOADED__ && typeof turnstile !== 'undefined') {
+                attachTurnstile();
+              } else {
+                const readyHandler = () => {
+                  attachTurnstile?.();
+                  window.removeEventListener('turnstile-ready', readyHandler);
+                };
+                window.addEventListener('turnstile-ready', readyHandler, { once: true });
+              }
+            }
           };
 
           const openModal = () => {
@@ -4451,6 +5112,12 @@
             statusEl.textContent = '';
             overlay.style.display = 'flex';
             setTimeout(() => emailInput?.focus(), 0);
+            if (TURNSTILE_ENABLED) {
+              captchaContainer?.classList.remove('captcha-error');
+              attachTurnstile?.();
+            } else if (statusEl) {
+              statusEl.textContent = 'Captcha not configured.';
+            }
           };
 
           const SUBSCRIBE_ENDPOINTS = [
@@ -4474,6 +5141,14 @@
               statusEl.textContent = 'Please enter a valid email address.';
               return;
             }
+            if (!TURNSTILE_ENABLED) {
+              statusEl.textContent = 'Captcha not configured. Please try again later.';
+              return;
+            }
+            if (!turnstileTokenValue) {
+              statusEl.textContent = 'Please complete the captcha.';
+              return;
+            }
             statusEl.textContent = 'Subscribing…';
 
             try {
@@ -4486,7 +5161,7 @@
                 settlementId: 'mortgage_rates',
                 settlementName: 'Mortgage Rates',
                 deadline: null,
-                turnstileToken: 'auto-verified-fallback',
+                turnstileToken: turnstileTokenValue,
               };
               for (const url of SUBSCRIBE_ENDPOINTS) {
                 try {
@@ -4512,14 +5187,17 @@
                 statusEl.textContent = data.message || "You're subscribed!";
                 markSubscribed();
                 overlay.style.display = 'none';
+                resetTurnstile();
                 window.setTimeout(() => window.alert(`${data.message || "You're subscribed!"}\nConfirmation: ${code}`), 50);
               } else {
                 const detail = data?.error || (typeof data?.detail === 'string' ? data.detail : '') || resp.statusText || raw || 'Unknown error';
                 statusEl.textContent = `Subscription failed: ${detail}`;
+                resetTurnstile();
               }
             } catch (err) {
               console.error('Notify subscription error', err);
               statusEl.textContent = 'Subscription failed. Please try again.';
+              resetTurnstile();
             }
           };
 

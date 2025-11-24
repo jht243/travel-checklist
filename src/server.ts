@@ -61,6 +61,7 @@ const ROOT_DIR = (() => {
 
 const ASSETS_DIR = path.resolve(ROOT_DIR, "assets");
 const LOGS_DIR = path.resolve(__dirname, "..", "logs");
+const TURNSTILE_SITE_KEY = process.env.TURNSTILE_SITE_KEY || "";
 
 if (!fs.existsSync(LOGS_DIR)) {
   fs.mkdirSync(LOGS_DIR, { recursive: true });
@@ -249,7 +250,7 @@ function classifyDevice(userAgent?: string | null): string {
 
 function computeSummary(args: any) {
   // Prefer auto-loan fields when present, otherwise fall back to generic mortgage fields
-  const autoPrice = typeof (args as any).auto_price === "number" && (args as any).auto_price > 0 ? (args as any).auto_price : null;
+  let autoPrice = typeof (args as any).auto_price === "number" && (args as any).auto_price > 0 ? (args as any).auto_price : null;
   const loanMonths = typeof (args as any).loan_term_months === "number" && (args as any).loan_term_months > 0 ? (args as any).loan_term_months : null;
   const ratePctAuto = typeof (args as any).interest_rate_pct === "number" && (args as any).interest_rate_pct >= 0 ? (args as any).interest_rate_pct : null;
   const cashIncentives = Math.max(0, Number((args as any).cash_incentives ?? 0));
@@ -259,6 +260,61 @@ function computeSummary(args: any) {
   const salesTaxPct = Math.max(0, Number((args as any).sales_tax_pct ?? 0));
   const titleFees = Math.max(0, Number((args as any).title_fees ?? 0));
   const includeTaxesFees = Boolean((args as any).include_taxes_fees);
+  
+  // New: Monthly Payment Input
+  const monthlyPaymentInput = typeof (args as any).monthly_payment === "number" && (args as any).monthly_payment > 0 ? (args as any).monthly_payment : null;
+  const calculateBy = (args as any).calculate_by === "payment" ? "payment" : "price";
+
+  // Reverse calculation: Payment -> Price
+  if (calculateBy === "payment" && monthlyPaymentInput != null && loanMonths != null && ratePctAuto != null) {
+    const n = loanMonths;
+    const r = (ratePctAuto / 100) / 12;
+    let principal = 0;
+    if (r === 0) {
+      principal = monthlyPaymentInput * n;
+    } else {
+      const f = Math.pow(1 + r, n);
+      principal = monthlyPaymentInput * (f - 1) / (r * f);
+    }
+    
+    // Solve for Price (V) from Principal (P)
+    // Standard: P = V_net + TIO - DP - CI + (includeTaxes ? (TaxRate * V_net + Fees) : 0)
+    // V_net = V - TI (assuming V >= TI)
+    // If taxes included: P = V_net(1 + TaxRate) + TIO - DP - CI + Fees
+    // V_net = (P - TIO + DP + CI - Fees) / (1 + TaxRate)
+    // If taxes excluded: P = V_net + TIO - DP - CI
+    // V_net = P - TIO + DP + CI
+    
+    const taxRate = salesTaxPct / 100;
+    const effectiveFees = includeTaxesFees ? titleFees : 0; // Fees are financed?
+    
+    // Note: "financedExtras" in forward calc = includeTaxesFees ? (taxes + titleFees) : 0
+    // Forward: 
+    // taxableBase = max(0, V - TI)
+    // taxes = taxRate * taxableBase
+    // baseToFinance = V - incentives - DP - (TI - TIO)
+    // principal = baseToFinance + (includeTaxesFees ? (taxes + titleFees) : 0)
+    // principal = V - incentives - DP - TI + TIO + (includeTaxesFees ? (taxRate * (V-TI) + titleFees) : 0)
+    
+    // Let's assume V >= TI for the reverse calculation (V_net = V - TI)
+    // principal = (V - TI) + TI - incentives - DP - TI + TIO + ...
+    // principal = (V - TI) - incentives - DP + TIO + (includeTaxesFees ? (taxRate * (V-TI) + titleFees) : 0)
+    // principal = V_net - incentives - DP + TIO + (includeTaxesFees ? (taxRate * V_net + titleFees) : 0)
+    
+    let vNet = 0;
+    if (includeTaxesFees) {
+      // principal = V_net(1 + taxRate) - incentives - DP + TIO + titleFees
+      // V_net = (principal + incentives + DP - TIO - titleFees) / (1 + taxRate)
+      vNet = (principal + cashIncentives + downPaymentValAuto - tradeInOwed - titleFees) / (1 + taxRate);
+    } else {
+      // principal = V_net - incentives - DP + TIO
+      // V_net = principal + incentives + DP - TIO
+      vNet = principal + cashIncentives + downPaymentValAuto - tradeInOwed;
+    }
+    
+    // V = V_net + TI
+    autoPrice = Math.max(0, vNet + tradeInValue);
+  }
 
   // Map auto-loan into principal if auto fields are available
   let principalAuto: number | null = null;
@@ -280,6 +336,7 @@ function computeSummary(args: any) {
   const principal = principalAuto;
   if (principal == null || apr == null || years == null) {
     return {
+      vehicle_price: autoPrice,
       loan_amount: principal,
       monthly_payment_pi: null,
       months_to_payoff: null,
@@ -305,6 +362,7 @@ function computeSummary(args: any) {
   const payoffDate = `${payoff.getFullYear()}-${String(payoff.getMonth() + 1).padStart(2, "0")}`;
 
   return {
+    vehicle_price: autoPrice ? Math.round(autoPrice * 100) / 100 : null,
     loan_amount: Math.round(principal),
     monthly_payment_pi: Math.round(m * 100) / 100,
     months_to_payoff: n,
@@ -403,7 +461,8 @@ function widgetMeta(widget: AutoLoanWidget, bustCache: boolean = false) {
       connect_domains: [
         "https://api.stlouisfed.org",
         "https://auto-calculator.onrender.com",
-        "http://localhost:8010"
+        "http://localhost:8010",
+        "https://challenges.cloudflare.com"
       ],
       resource_domains: [],
     },
@@ -412,17 +471,6 @@ function widgetMeta(widget: AutoLoanWidget, bustCache: boolean = false) {
     "openai/toolInvocation/invoked": widget.invoked,
     "openai/widgetAccessible": true,
     "openai/resultCanProduceWidget": true,
-    "openai/starterPrompts": [
-      "Show mean auto loan calculator.",
-      "Deteremine the monthly payment of an auto loan.",
-      "How much does a new car cost to finance?",
-      "Analyze a car loan: purchase $30,000, 20% down, 6.25% APR, monthly expenses $500, over 5 years.",
-      "Can I afford to finance a new car?",
-    ],
-    "openai/sampleConversations": [
-      { "user": "Calculate the monthly payment for a $35,000 car with $5,000 down over 72 months at 6.5%.", "assistant": "Here is the auto loan calculator with your inputs. You can see the monthly payment, total interest, and a full amortization schedule." },
-      { "user": "Compare a 48-month vs a 60-month loan on a $25,000 car.", "assistant": "I can help with that. Here is the calculator pre-filled for the 48-month term. You can adjust the term to 60 months to see the difference in payment and total interest." }
-    ],
   } as const;
 }
 
@@ -461,6 +509,8 @@ const toolInputSchema = {
     sales_tax_pct: { type: "number", description: "Sales tax percent applied to taxable base." },
     title_fees: { type: "number", description: "Title/registration/other fees in dollars." },
     include_taxes_fees: { type: "boolean", description: "If true, include taxes and fees in the financed amount." },
+    monthly_payment: { type: "number", description: "Target monthly payment (if calculating vehicle price)." },
+    calculate_by: { type: "string", enum: ["price", "payment"], description: "Calculation mode: 'price' (default) or 'payment'." },
   },
   required: [],
   additionalProperties: false,
@@ -478,6 +528,8 @@ const toolInputParser = z.object({
   sales_tax_pct: z.number().optional(),
   title_fees: z.number().optional(),
   include_taxes_fees: z.boolean().optional(),
+  monthly_payment: z.number().optional(),
+  calculate_by: z.enum(["price", "payment"]).optional(),
 });
 
 const tools: Tool[] = widgets.map((widget) => ({
@@ -500,6 +552,7 @@ const tools: Tool[] = widgets.map((widget) => ({
         properties: {
           loan_amount: { type: ["number", "null"] },
           monthly_payment_pi: { type: ["number", "null"] },
+          vehicle_price: { type: ["number", "null"] },
           months_to_payoff: { type: ["number", "null"] },
           payoff_date: { type: ["string", "null"] },
           lifetime_interest: { type: ["number", "null"] },
@@ -606,6 +659,12 @@ function createAutoLoanCalculatorServer(): Server {
         console.log(`[MCP Injection] Injected "${rateText}", replacement success: ${replaced}`);
       } else {
         console.log(`[MCP Injection] No valid rate, sending blank badge`);
+      }
+
+      if (TURNSTILE_SITE_KEY) {
+        htmlToSend = htmlToSend.replace(/__TURNSTILE_SITE_KEY__/g, TURNSTILE_SITE_KEY);
+      } else {
+        console.warn("[Turnstile] TURNSTILE_SITE_KEY missing; captcha will not render");
       }
 
       return {
@@ -863,7 +922,7 @@ function createAutoLoanCalculatorServer(): Server {
         } catch {}
 
         return {
-          content: [],
+          // Omit content to suppress text
           structuredContent: structured,
           _meta: metaForReturn,
         };
@@ -954,7 +1013,60 @@ function formatEventDetails(log: AnalyticsEvent): string {
   return JSON.stringify(details, null, 0);
 }
 
-function generateAnalyticsDashboard(logs: AnalyticsEvent[]): string {
+type AlertEntry = {
+  id: string;
+  level: "warning" | "critical";
+  message: string;
+};
+
+function evaluateAlerts(logs: AnalyticsEvent[]): AlertEntry[] {
+  const alerts: AlertEntry[] = [];
+  const now = Date.now();
+  const dayAgo = now - 24 * 60 * 60 * 1000;
+  const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+
+  const toolErrors24h = logs.filter(
+    (l) =>
+      l.event === "tool_call_error" &&
+      new Date(l.timestamp).getTime() >= dayAgo
+  ).length;
+
+  if (toolErrors24h > 5) {
+    alerts.push({
+      id: "tool-errors",
+      level: "critical",
+      message: `Tool failures in last 24h: ${toolErrors24h} (>5 threshold)`,
+    });
+  }
+
+  const recentSubs = logs.filter(
+    (l) =>
+      (l.event === "widget_notify_me_subscribe" ||
+        l.event === "widget_notify_me_subscribe_error") &&
+      new Date(l.timestamp).getTime() >= weekAgo
+  );
+
+  const subFailures = recentSubs.filter(
+    (l) => l.event === "widget_notify_me_subscribe_error"
+  ).length;
+
+  const failureRate =
+    recentSubs.length > 0 ? subFailures / recentSubs.length : 0;
+
+  if (recentSubs.length >= 5 && failureRate > 0.1) {
+    alerts.push({
+      id: "buttondown-failures",
+      level: "warning",
+      message: `Buttondown failure rate ${(failureRate * 100).toFixed(
+        1
+      )}% over last 7d (${subFailures}/${recentSubs.length})`,
+    });
+  }
+
+  return alerts;
+}
+
+function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]): string {
   const errorLogs = logs.filter((l) => l.event.includes("error"));
   const successLogs = logs.filter((l) => l.event === "tool_call_success");
   const parseLogs = logs.filter((l) => l.event === "parameter_parse_error");
@@ -1065,6 +1177,19 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[]): string {
     <p class="subtitle">Last 7 days • Auto-refresh every 60s</p>
     
     <div class="grid">
+      <div class="card ${alerts.length ? "warning" : ""}">
+        <h2>Alerts</h2>
+        ${
+          alerts.length
+            ? `<ul style="padding-left:16px;margin:0;">${alerts
+                .map(
+                  (a) =>
+                    `<li><strong>${a.level.toUpperCase()}</strong> — ${a.message}</li>`
+                )
+                .join("")}</ul>`
+            : '<p style="color:#16a34a;">No active alerts</p>'
+        }
+      </div>
       <div class="card success">
         <h2>Total Calls</h2>
         <div class="value">${successLogs.length}</div>
@@ -1332,7 +1457,11 @@ async function handleAnalytics(req: IncomingMessage, res: ServerResponse) {
 
   try {
     const logs = getRecentLogs(7);
-    const html = generateAnalyticsDashboard(logs);
+    const alerts = evaluateAlerts(logs);
+    alerts.forEach((alert) =>
+      console.warn("[ALERT]", alert.id, alert.message)
+    );
+    const html = generateAnalyticsDashboard(logs, alerts);
     res.writeHead(200, { "Content-Type": "text/html" });
     res.end(html);
   } catch (error) {
@@ -1382,14 +1511,13 @@ async function handleTrackEvent(req: IncomingMessage, res: ServerResponse) {
 async function verifyTurnstile(token: string): Promise<boolean> {
   const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY;
   
-  // Accept fallback tokens when Turnstile fails to load (e.g., in iframes)
-  if (token === 'auto-verified-fallback' || token === 'error-fallback' || token === 'render-error-fallback') {
-    console.warn(`Turnstile fallback used: ${token}`);
-    return true; // Allow subscription to proceed
-  }
-  
   if (!TURNSTILE_SECRET_KEY) {
     console.error("TURNSTILE_SECRET_KEY not set in environment variables");
+    return false;
+  }
+
+  if (!token) {
+    console.error("Turnstile token missing");
     return false;
   }
 
@@ -1611,6 +1739,11 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
             settlementId,
             error: updateError?.message,
           });
+          logAnalytics("widget_notify_me_subscribe_error", {
+            stage: "update",
+            email,
+            error: updateError?.message,
+          });
           res.writeHead(200).end(JSON.stringify({
             success: true,
             message: "You're already subscribed! We'll keep you posted.",
@@ -1619,12 +1752,22 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
         return;
       }
 
+      logAnalytics("widget_notify_me_subscribe_error", {
+        stage: "subscribe",
+        email,
+        error: rawMessage || "unknown_error",
+      });
       throw subscribeError;
     }
   } catch (error: any) {
     console.error("Subscribe error:", error);
     console.error("Error message:", error.message);
     console.error("Error stack:", error.stack);
+    logAnalytics("widget_notify_me_subscribe_error", {
+      stage: "handler",
+      email: undefined,
+      error: error.message || "unknown_error",
+    });
     res.writeHead(500).end(JSON.stringify({ 
       error: error.message || "Failed to subscribe. Please try again." 
     }));

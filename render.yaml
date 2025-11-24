@@ -19,3 +19,7 @@ services:
         sync: false
       - key: FRED_SERIES_ID
         value: MORTGAGE30US
+      - key: TURNSTILE_SITE_KEY
+        sync: false
+      - key: TURNSTILE_SECRET_KEY
+        sync: false
