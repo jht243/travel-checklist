@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: auto-loan-calculator
+    name: bmi-health-calculator
     env: node
     plan: free
     region: oregon

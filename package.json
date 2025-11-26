@@ -1,21 +1,14 @@
 {
-  "name": "auto-loan-calculator-mcp-node",
+  "name": "bmi-health-calculator-mcp-node",
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "Auto Loan Calculator — calculate auto loan monthly payments with long‑form, human‑readable analysis. Computes monthly payment (P&I), total interest, payoff date, and amortization schedule. Accepts vehicle price, down payment, interest rate (APR), term, taxes/fees, and extra principal to explore scenarios.",
+  "description": "BMI Health Calculator — calculate body mass index and health metrics. Analysis of health data.",
   "keywords": [
-    "auto loan calculator",
-    "car loan calculator",
-    "auto loan monthly payment",
-    "APR",
-    "interest",
-    "auto financing",
-    "amortization",
-    "payoff date",
-    "total interest",
-    "vehicle price",
-    "down payment"
+    "bmi calculator",
+    "health calculator",
+    "body mass index",
+    "health metrics"
   ],
   "scripts": {
     "start": "tsx src/server.ts"
@@ -27,6 +20,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/node": "^24.10.1",
     "esbuild": "^0.27.0",
     "typescript": "^5.6.3"

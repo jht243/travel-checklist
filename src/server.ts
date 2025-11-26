@@ -30,7 +30,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
-type AutoLoanLeaseWidget = {
+type BmiHealthWidget = {
   id: string;
   title: string;
   templateUri: string;
@@ -67,128 +67,20 @@ if (!fs.existsSync(LOGS_DIR)) {
   fs.mkdirSync(LOGS_DIR, { recursive: true });
 }
 
-// FRED daily mortgage rate endpoint (/api/rate)
+// FRED daily mortgage rate endpoint logic removed for BMI Health Calculator
 type RateCache = { ts: number; payload: any } | null;
 let fredRateCache: RateCache = null;
 
 async function fetchFredLatestRate(): Promise<{ raw: number; adjusted: number; observationDate: string; source: string; } | null> {
-  const FRED_API_KEY = process.env.FRED_API_KEY;
-  const seriesId = process.env.FRED_SERIES_ID || "MORTGAGE30US";
-  if (!FRED_API_KEY) {
-    console.error("[FRED] FRED_API_KEY not set");
-    return null;
-  }
-
-  const url = new URL("https://api.stlouisfed.org/fred/series/observations");
-  url.searchParams.set("series_id", seriesId);
-  url.searchParams.set("api_key", FRED_API_KEY);
-  url.searchParams.set("file_type", "json");
-  url.searchParams.set("sort_order", "desc");
-  url.searchParams.set("limit", "14");
-
-  try {
-    console.log("[FRED] Fetching latest rate", {
-      seriesId,
-      url: url.toString(),
-    });
-    const resp = await fetch(url.toString());
-    if (!resp.ok) throw new Error(`FRED error ${resp.status}`);
-    const data = await resp.json();
-    const obs = Array.isArray(data?.observations) ? data.observations : [];
-    const firstValid = obs.find((o: any) => o && o.value && o.value !== ".");
-    if (!firstValid) {
-      console.error("[FRED] No valid observations returned", {
-        seriesId,
-        sample: obs.slice(0, 5),
-      });
-      return null;
-    }
-    const raw = parseFloat(firstValid.value);
-    if (!Number.isFinite(raw)) {
-      console.error("[FRED] Observation value not numeric", {
-        seriesId,
-        observation: firstValid,
-      });
-      return null;
-    }
-    const adjusted = raw - 0.4;
-    console.log("[FRED] Received observation", {
-      observationDate: firstValid.date,
-      raw,
-      adjusted,
-    });
-    return { raw, adjusted, observationDate: firstValid.date, source: seriesId };
-  } catch (e) {
-    console.error("[FRED] Fetch failed", e);
-    return null;
-  }
+  // FRED integration is disabled/removed for BMI context
+  return null;
 }
 
 async function handleRate(req: IncomingMessage, res: ServerResponse) {
-  const requestId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  console.log("[Rate] Request received", {
-    requestId,
-    method: req.method,
-    url: req.url,
-  });
+  // ...
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "content-type");
   res.setHeader("Content-Type", "application/json");
-
-  if (req.method === "OPTIONS") {
-    res.writeHead(204, {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "content-type",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-    }).end();
-    return;
-  }
-
-  if (req.method !== "GET") {
-    console.warn("[Rate] Unsupported method", { requestId, method: req.method });
-    res.writeHead(405).end(JSON.stringify({ error: "Method not allowed" }));
-    return;
-  }
-
-  const now = Date.now();
-  const TTL = 60 * 60 * 1000; // 1 hour
-  if (fredRateCache && now - fredRateCache.ts < TTL) {
-    console.log("[Rate] Serving cached value", {
-      requestId,
-      cachedAt: fredRateCache.ts,
-      ratePercent: fredRateCache.payload?.ratePercent,
-    });
-    res.setHeader("Cache-Control", "public, max-age=3600");
-    res.writeHead(200).end(JSON.stringify(fredRateCache.payload));
-    return;
-  }
-
-  console.log("[Rate] Cache miss, fetching fresh value", {
-    requestId,
-    cachePresent: Boolean(fredRateCache),
-  });
-  const result = await fetchFredLatestRate();
-  if (!result) {
-    console.error("[Rate] Failed to obtain FRED rate", { requestId });
-    res.setHeader("Cache-Control", "no-store");
-    res.writeHead(503).end(JSON.stringify({ error: "FRED unavailable" }));
-    return;
-  }
-  const rounded = Math.round(result.adjusted * 10) / 10;
-  const payload: any = {
-    ratePercent: rounded,
-    rawPercent: result.raw,
-    adjustedAdded: -0.4,
-    observationDate: result.observationDate,
-    source: result.source,
-  };
-  fredRateCache = { ts: now, payload };
-  console.log("[Rate] Returning fresh value", {
-    requestId,
-    payload,
-  });
-  res.setHeader("Cache-Control", "public, max-age=3600");
-  res.writeHead(200).end(JSON.stringify(payload));
+  res.writeHead(200).end(JSON.stringify({ note: "Rate endpoint not used in BMI calculator" }));
 }
 
 type AnalyticsEvent = {
@@ -249,125 +141,102 @@ function classifyDevice(userAgent?: string | null): string {
 }
 
 function computeSummary(args: any) {
-  // Prefer auto-loan fields when present, otherwise fall back to generic mortgage fields
-  let autoPrice = typeof (args as any).auto_price === "number" && (args as any).auto_price > 0 ? (args as any).auto_price : null;
-  const loanMonths = typeof (args as any).loan_term_months === "number" && (args as any).loan_term_months > 0 ? (args as any).loan_term_months : null;
-  const ratePctAuto = typeof (args as any).interest_rate_pct === "number" && (args as any).interest_rate_pct >= 0 ? (args as any).interest_rate_pct : null;
-  const cashIncentives = Math.max(0, Number((args as any).cash_incentives ?? 0));
-  const downPaymentValAuto = Math.max(0, Number((args as any).down_payment_value ?? 0));
-  const tradeInValue = Math.max(0, Number((args as any).trade_in_value ?? 0));
-  const tradeInOwed = Math.max(0, Number((args as any).trade_in_owed ?? 0));
-  const salesTaxPct = Math.max(0, Number((args as any).sales_tax_pct ?? 0));
-  const titleFees = Math.max(0, Number((args as any).title_fees ?? 0));
-  const includeTaxesFees = Boolean((args as any).include_taxes_fees);
-  
-  // New: Monthly Payment Input
-  const monthlyPaymentInput = typeof (args as any).monthly_payment === "number" && (args as any).monthly_payment > 0 ? (args as any).monthly_payment : null;
-  const calculateBy = (args as any).calculate_by === "payment" ? "payment" : "price";
+  const height = Number(args.height_cm);
+  const weight = Number(args.weight_kg);
+  const age = Number(args.age_years);
+  const gender = args.gender;
+  const waist = Number(args.waist_cm);
+  const hip = Number(args.hip_cm);
+  const neck = Number(args.neck_cm);
+  const activity = args.activity_level || "sedentary";
 
-  // Reverse calculation: Payment -> Price
-  if (calculateBy === "payment" && monthlyPaymentInput != null && loanMonths != null && ratePctAuto != null) {
-    const n = loanMonths;
-    const r = (ratePctAuto / 100) / 12;
-    let principal = 0;
-    if (r === 0) {
-      principal = monthlyPaymentInput * n;
-    } else {
-      const f = Math.pow(1 + r, n);
-      principal = monthlyPaymentInput * (f - 1) / (r * f);
-    }
-    
-    // Solve for Price (V) from Principal (P)
-    // Standard: P = V_net + TIO - DP - CI + (includeTaxes ? (TaxRate * V_net + Fees) : 0)
-    // V_net = V - TI (assuming V >= TI)
-    // If taxes included: P = V_net(1 + TaxRate) + TIO - DP - CI + Fees
-    // V_net = (P - TIO + DP + CI - Fees) / (1 + TaxRate)
-    // If taxes excluded: P = V_net + TIO - DP - CI
-    // V_net = P - TIO + DP + CI
-    
-    const taxRate = salesTaxPct / 100;
-    const effectiveFees = includeTaxesFees ? titleFees : 0; // Fees are financed?
-    
-    // Note: "financedExtras" in forward calc = includeTaxesFees ? (taxes + titleFees) : 0
-    // Forward: 
-    // taxableBase = max(0, V - TI)
-    // taxes = taxRate * taxableBase
-    // baseToFinance = V - incentives - DP - (TI - TIO)
-    // principal = baseToFinance + (includeTaxesFees ? (taxes + titleFees) : 0)
-    // principal = V - incentives - DP - TI + TIO + (includeTaxesFees ? (taxRate * (V-TI) + titleFees) : 0)
-    
-    // Let's assume V >= TI for the reverse calculation (V_net = V - TI)
-    // principal = (V - TI) + TI - incentives - DP - TI + TIO + ...
-    // principal = (V - TI) - incentives - DP + TIO + (includeTaxesFees ? (taxRate * (V-TI) + titleFees) : 0)
-    // principal = V_net - incentives - DP + TIO + (includeTaxesFees ? (taxRate * V_net + titleFees) : 0)
-    
-    let vNet = 0;
-    if (includeTaxesFees) {
-      // principal = V_net(1 + taxRate) - incentives - DP + TIO + titleFees
-      // V_net = (principal + incentives + DP - TIO - titleFees) / (1 + taxRate)
-      vNet = (principal + cashIncentives + downPaymentValAuto - tradeInOwed - titleFees) / (1 + taxRate);
-    } else {
-      // principal = V_net - incentives - DP + TIO
-      // V_net = principal + incentives + DP - TIO
-      vNet = principal + cashIncentives + downPaymentValAuto - tradeInOwed;
-    }
-    
-    // V = V_net + TI
-    autoPrice = Math.max(0, vNet + tradeInValue);
-  }
-
-  // Map auto-loan into principal if auto fields are available
-  let principalAuto: number | null = null;
-  if (autoPrice != null) {
-    const priceAfterIncentives = Math.max(0, autoPrice - cashIncentives);
-    const netTrade = Math.max(0, tradeInValue - tradeInOwed) - Math.max(0, tradeInOwed - tradeInValue); // signed net is tradeValue - tradeOwed
-    const signedNetTrade = tradeInValue - tradeInOwed; // positive reduces principal, negative increases
-    const taxableBase = Math.max(0, priceAfterIncentives - Math.max(0, tradeInValue));
-    const taxes = (salesTaxPct / 100) * taxableBase;
-    const financedExtras = includeTaxesFees ? (taxes + titleFees) : 0;
-    const baseToFinance = Math.max(0, priceAfterIncentives - downPaymentValAuto - signedNetTrade);
-    principalAuto = Math.max(0, baseToFinance + financedExtras);
-  }
-
-  const hv = autoPrice != null ? autoPrice : null;
-  const dpv = downPaymentValAuto;
-  const apr = ratePctAuto;
-  const years = loanMonths != null ? (loanMonths / 12) : null;
-  const principal = principalAuto;
-  if (principal == null || apr == null || years == null) {
+  if (!height || !weight) {
     return {
-      vehicle_price: autoPrice,
-      loan_amount: principal,
-      monthly_payment_pi: null,
-      months_to_payoff: null,
-      payoff_date: null,
-      lifetime_interest: null,
-      pmi_end_month_index: null,
-      biweekly: null,
+      bmi: null,
+      bmi_category: null,
+      ideal_weight_min: null,
+      ideal_weight_max: null,
+      body_fat_pct: null,
+      tdee_calories: null,
     };
   }
-  const n = Math.round(years * 12);
-  const r = (apr / 100) / 12;
-  let m = 0;
-  if (r === 0) {
-    m = principal / n;
+
+  // BMI Calculation
+  const heightM = height / 100;
+  const bmi = weight / (heightM * heightM);
+  
+  let bmiCategory = "Normal weight";
+  if (bmi < 18.5) bmiCategory = "Underweight";
+  else if (bmi >= 25 && bmi < 30) bmiCategory = "Overweight";
+  else if (bmi >= 30) bmiCategory = "Obese";
+
+  // Ideal Body Weight (Devine Formula)
+  // Male: 50 kg + 2.3 kg per inch over 5 feet
+  // Female: 45.5 kg + 2.3 kg per inch over 5 feet
+  const heightInches = height / 2.54;
+  const inchesOver60 = Math.max(0, heightInches - 60);
+  let idealWeight = 0;
+  if (gender === "female") {
+    idealWeight = 45.5 + (2.3 * inchesOver60);
   } else {
-    const f = Math.pow(1 + r, n);
-    m = principal * r * f / (f - 1);
+    // Default to male if unknown
+    idealWeight = 50.0 + (2.3 * inchesOver60);
   }
-  const totalPaid = m * n;
-  const totalInterest = totalPaid - principal;
-  const now = new Date();
-  const payoff = new Date(now.setMonth(now.getMonth() + n));
-  const payoffDate = `${payoff.getFullYear()}-${String(payoff.getMonth() + 1).padStart(2, "0")}`;
+  const idealWeightMin = Math.round((idealWeight * 0.9) * 10) / 10;
+  const idealWeightMax = Math.round((idealWeight * 1.1) * 10) / 10;
+
+  // Body Fat (U.S. Navy Method)
+  // Male: 495 / (1.0324 - 0.19077(log10(waist-neck)) + 0.15456(log10(height))) - 450
+  // Female: 495 / (1.29579 - 0.35004(log10(waist+hip-neck)) + 0.22100(log10(height))) - 450
+  let bodyFat = null;
+  if (waist && neck && height) {
+      const h = height;
+      const w = waist;
+      const n = neck;
+      
+      if (gender === 'male') {
+        // D = 1.0324 - 0.19077 * log10(W-N) + 0.15456 * log10(H)
+        if (w > n) {
+            const density = 1.0324 - 0.19077 * Math.log10(w - n) + 0.15456 * Math.log10(h);
+            bodyFat = (495 / density) - 450;
+        }
+      } else if (gender === 'female' && hip) {
+        // D = 1.29579 - 0.35004 * Math.log10(waist + hip - n) + 0.22100 * Math.log10(h);
+        if (w + hip > n) {
+            const density = 1.29579 - 0.35004 * Math.log10(w + hip - n) + 0.22100 * Math.log10(h);
+            bodyFat = (495 / density) - 450;
+        }
+      }
+  }
+
+  // TDEE / Calorie Calculation (Mifflin-St Jeor)
+  // Men: 10*W + 6.25*H - 5*A + 5
+  // Women: 10*W + 6.25*H - 5*A - 161
+  let bmr = 0;
+  if (gender === 'female') {
+    bmr = (10 * weight) + (6.25 * height) - (5 * (age || 30)) - 161;
+  } else {
+    bmr = (10 * weight) + (6.25 * height) - (5 * (age || 30)) + 5;
+  }
+
+  const activityMultipliers: Record<string, number> = {
+    "sedentary": 1.2,
+    "light": 1.375,
+    "moderate": 1.55,
+    "active": 1.725,
+    "very_active": 1.9,
+    "extra_active": 1.9
+  };
+  
+  const tdee = Math.round(bmr * (activityMultipliers[activity] || 1.2));
 
   return {
-    vehicle_price: autoPrice ? Math.round(autoPrice * 100) / 100 : null,
-    loan_amount: Math.round(principal),
-    monthly_payment_pi: Math.round(m * 100) / 100,
-    months_to_payoff: n,
-    payoff_date: payoffDate,
-    lifetime_interest: Math.round(totalInterest * 100) / 100,
+    bmi: Math.round(bmi * 10) / 10,
+    bmi_category: bmiCategory,
+    ideal_weight_min: idealWeightMin,
+    ideal_weight_max: idealWeightMax,
+    body_fat_pct: bodyFat ? Math.round(bodyFat * 10) / 10 : null,
+    tdee_calories: tdee,
   };
 }
 
@@ -419,55 +288,51 @@ function readWidgetHtml(componentName: string): string {
 // Added timestamp suffix to force cache invalidation for width fix
 const VERSION = (process.env.RENDER_GIT_COMMIT?.slice(0, 7) || Date.now().toString()) + '-' + Date.now();
 
-function widgetMeta(widget: AutoLoanLeaseWidget, bustCache: boolean = false) {
+function widgetMeta(widget: BmiHealthWidget, bustCache: boolean = false) {
   const templateUri = bustCache
-    ? `ui://widget/auto-loan-calculator.html?v=${VERSION}`
+    ? `ui://widget/bmi-health-calculator.html?v=${VERSION}`
     : widget.templateUri;
 
   return {
     "openai/outputTemplate": templateUri,
     "openai/widgetDescription":
-      "Auto Loan & Lease Calculator for analyzing vehicle financing. Compare buying vs. leasing, calculate monthly payments, view amortization schedules, and breakdown total costs for loans and leases.",
+      "A comprehensive health calculator for BMI, Ideal Weight, Body Fat Percentage, and Calorie Needs.",
     "openai/componentDescriptions": {
-      "rate-indicator": "Header indicator showing a relevant auto loan interest rate for market context; includes a refresh control.",
-      "rate-badge": "Badge showing a recent auto loan interest rate reference; updates when refreshed.",
-      "manual-refresh-button": "Refresh to pull a new auto loan interest rate reference.",
-      "loan-input-form": "Vehicle financing inputs—price, down payment, interest rate/money factor, and term—for both loans and leases.",
-      "monthly-summary-card": "A summary of the calculated monthly payment, whether for a loan or a lease.",
-      "quick-metrics": "Key metrics including total principal, interest/rent charge, and total payments.",
-      "breakdown-chart": "A chart visualizing the cost breakdown (principal vs. interest for loans; depreciation vs. rent/tax for leases).",
-      "amortization-section": "A schedule showing the loan balance over time (hidden for leases).",
-      "notification-cta": "Optional call-to-action for rate-drop updates to revisit financing terms when interest rates move.",
+      "metrics-form": "Input form for height, weight, age, gender, and other body measurements.",
+      "bmi-card": "Card displaying the calculated Body Mass Index and health category.",
+      "ideal-weight-card": "Card showing the estimated ideal weight range based on height and gender.",
+      "body-fat-card": "Card showing estimated body fat percentage using the US Navy method.",
+      "calorie-card": "Card showing daily calorie needs (TDEE) based on activity level."
     },
     "openai/widgetKeywords": [
-      "auto loan calculator",
-      "auto lease calculator",
-      "car payment calculator",
-      "lease vs buy",
-      "car lease",
-      "residual value",
-      "money factor",
-      "auto loan analysis",
-      "auto loan monthly payment",
-      "auto loan total interest",
-      "auto loan amortization schedule",
+      "bmi",
+      "body fat",
+      "ideal weight",
+      "calories",
+      "tdee",
+      "health calculator",
+      "weight loss",
+      "fitness",
+      "diet"
     ],
     "openai/sampleConversations": [
-      { "user": "Calculate my auto loan payment for a $45,000 car.", "assistant": "Here is the auto loan calculator with your inputs applied." },
-      { "user": "How much is a lease on a $50k car with $5k down?", "assistant": "I've set up the lease calculator for a $50k vehicle with your down payment." },
-      { "user": "What is my total interest paid on a $30k loan at 5% for 60 months?", "assistant": "I’ll compute the total interest paid over the life of the loan." }
+      { "user": "Calculate my BMI, I am 180cm and 75kg.", "assistant": "I can help with that. Here is your BMI calculation." },
+      { "user": "What is my ideal weight if I'm 5'6\" female?", "assistant": "I've estimated your ideal weight range based on your height and gender." },
+      { "user": "Estimate body fat for 30yo male, waist 90cm, neck 38cm, height 178cm.", "assistant": "Using the US Navy method, here is your estimated body fat percentage." },
+      { "user": "How many calories should I eat to lose weight? I'm active.", "assistant": "I can calculate your daily calorie needs based on your activity level." }
     ],
     "openai/starterPrompts": [
-      "Show an auto loan calculator.",
-      "Calculate a car lease.",
-      "Analyze my car payment.",
-      "Lease vs loan comparison.",
+      "Calculate BMI",
+      "Ideal Weight",
+      "Body Fat Calculator",
+      "Calorie Calculator",
+      "Am I overweight?",
     ],
     "openai/widgetPrefersBorder": true,
     "openai/widgetCSP": {
       connect_domains: [
         "https://api.stlouisfed.org",
-        "https://auto-calculator.onrender.com",
+        "https://body-health-calculator.onrender.com",
         "http://localhost:8010",
         "https://challenges.cloudflare.com"
       ],
@@ -481,21 +346,21 @@ function widgetMeta(widget: AutoLoanLeaseWidget, bustCache: boolean = false) {
   } as const;
 }
 
-const widgets: AutoLoanLeaseWidget[] = [
+const widgets: BmiHealthWidget[] = [
   {
-    id: "auto-loan-calculator",
-    title: "Auto Loan & Lease Calculator — analyze monthly payments, leasing scenarios, and total costs",
-    templateUri: `ui://widget/auto-loan-calculator.html?v=${VERSION}`,
+    id: "bmi-health-calculator",
+    title: "BMI Health Calculator — analyze body mass index and health",
+    templateUri: `ui://widget/bmi-health-calculator.html?v=${VERSION}`,
     invoking:
-      "Opening the Auto Loan & Lease Calculator...",
+      "Opening the BMI Health Calculator...",
     invoked:
-      "Here is the Auto Loan & Lease Calculator. You can compare loan and lease options and adjust inputs.",
-    html: readWidgetHtml("auto-loan-calculator"),
+      "Here is the BMI Health Calculator. You can enter your height and weight.",
+    html: readWidgetHtml("bmi-health-calculator"),
   },
 ];
 
-const widgetsById = new Map<string, AutoLoanLeaseWidget>();
-const widgetsByUri = new Map<string, AutoLoanLeaseWidget>();
+const widgetsById = new Map<string, BmiHealthWidget>();
+const widgetsByUri = new Map<string, BmiHealthWidget>();
 
 widgets.forEach((widget) => {
   widgetsById.set(widget.id, widget);
@@ -505,66 +370,56 @@ widgets.forEach((widget) => {
 const toolInputSchema = {
   type: "object",
   properties: {
-    auto_price: { type: "number", description: "Vehicle price (e.g., 50000)." },
-    down_payment_value: { type: "number", description: "Down payment in dollars (not percent)." },
-    loan_term_months: { type: "number", description: "Loan term in months (e.g., 60)." },
-    interest_rate_pct: { type: "number", description: "APR as percent (e.g., 5 for 5%)." },
-    cash_incentives: { type: "number", description: "Cash rebates/incentives applied to price." },
-    trade_in_value: { type: "number", description: "Trade-in value in dollars." },
-    trade_in_owed: { type: "number", description: "Amount still owed on trade-in in dollars." },
-    state: { type: "string", description: "Two-letter state code." },
-    sales_tax_pct: { type: "number", description: "Sales tax percent applied to taxable base." },
-    title_fees: { type: "number", description: "Title/registration/other fees in dollars." },
-    include_taxes_fees: { type: "boolean", description: "If true, include taxes and fees in the financed amount." },
-    monthly_payment: { type: "number", description: "Target monthly payment (if calculating vehicle price)." },
-    calculate_by: { type: "string", enum: ["price", "payment"], description: "Calculation mode: 'price' (default) or 'payment'." },
-    purchase_type: { type: "string", enum: ["loan", "lease"], description: "Purchase type: 'loan' (default) or 'lease'." },
+    height_cm: { type: "number", description: "Height in centimeters." },
+    weight_kg: { type: "number", description: "Weight in kilograms." },
+    age_years: { type: "number", description: "Age in years." },
+    gender: { type: "string", enum: ["male", "female"], description: "Biological sex for formula selection." },
+    waist_cm: { type: "number", description: "Waist circumference in cm (for body fat)." },
+    hip_cm: { type: "number", description: "Hip circumference in cm (for body fat, female)." },
+    neck_cm: { type: "number", description: "Neck circumference in cm (for body fat)." },
+    activity_level: { 
+        type: "string", 
+        enum: ["sedentary", "light", "moderate", "active", "very_active", "extra_active"],
+        description: "Activity level for TDEE calculation."
+    }
   },
   required: [],
   additionalProperties: false,
 } as const;
 
 const toolInputParser = z.object({
-  auto_price: z.number().optional(),
-  down_payment_value: z.number().optional(),
-  loan_term_months: z.number().optional(),
-  interest_rate_pct: z.number().optional(),
-  cash_incentives: z.number().optional(),
-  trade_in_value: z.number().optional(),
-  trade_in_owed: z.number().optional(),
-  state: z.string().optional(),
-  sales_tax_pct: z.number().optional(),
-  title_fees: z.number().optional(),
-  include_taxes_fees: z.boolean().optional(),
-  monthly_payment: z.number().optional(),
-  calculate_by: z.enum(["price", "payment"]).optional(),
-  purchase_type: z.enum(["loan", "lease"]).optional(),
+  height_cm: z.number().optional(),
+  weight_kg: z.number().optional(),
+  age_years: z.number().optional(),
+  gender: z.enum(["male", "female"]).optional(),
+  waist_cm: z.number().optional(),
+  hip_cm: z.number().optional(),
+  neck_cm: z.number().optional(),
+  activity_level: z.enum(["sedentary", "light", "moderate", "active", "very_active", "extra_active"]).optional(),
 });
 
 const tools: Tool[] = widgets.map((widget) => ({
   name: widget.id,
   description:
-    "Use this for auto loan analysis. The calculator opens with sensible default values and does NOT require explicit numbers to run—users can adjust inputs interactively in the widget. If the user provides specific values (vehicle price, loan term, interest rate, etc.), pass them to pre-populate the calculator. It calculates the monthly payment, total interest, and provides a full amortization schedule.",
+    "Use this for BMI, Ideal Weight, and Body Fat analysis. It calculates health metrics based on height, weight, and other inputs.",
   inputSchema: toolInputSchema,
   outputSchema: {
     type: "object",
     properties: {
       ready: { type: "boolean" },
       timestamp: { type: "string" },
-      currentRate: { type: ["number", "null"] },
-      auto_price: { type: "number" },
-      down_payment_value: { type: "number" },
-      interest_rate_pct: { type: "number" },
-      loan_term_months: { type: "number" },
+      height_cm: { type: "number" },
+      weight_kg: { type: "number" },
+      bmi: { type: "number" },
       summary: {
         type: "object",
         properties: {
-          loan_amount: { type: ["number", "null"] },
-          monthly_payment_pi: { type: ["number", "null"] },
-          vehicle_price: { type: ["number", "null"] },
-          months_to_payoff: { type: ["number", "null"] },
-          payoff_date: { type: ["string", "null"] },
-          lifetime_interest: { type: ["number", "null"] },
+          bmi: { type: ["number", "null"] },
+          bmi_category: { type: ["string", "null"] },
+          ideal_weight_min: { type: ["number", "null"] },
+          ideal_weight_max: { type: ["number", "null"] },
+          body_fat_pct: { type: ["number", "null"] },
+          tdee_calories: { type: ["number", "null"] },
         },
       },
       suggested_followups: {
@@ -590,7 +445,7 @@ const resources: Resource[] = widgets.map((widget) => ({
   uri: widget.templateUri,
   name: widget.title,
   description:
-    "HTML template for the Auto Loan & Lease Calculator widget.",
+    "HTML template for the BMI, Fitness, Calorie, and Body Fat Health Calculator widget.",
   mimeType: "text/html+skybridge",
   _meta: widgetMeta(widget),
 }));
@@ -599,18 +454,18 @@ const resourceTemplates: ResourceTemplate[] = widgets.map((widget) => ({
   uriTemplate: widget.templateUri,
   name: widget.title,
   description:
-    "Template descriptor for the Auto Loan & Lease Calculator widget.",
+    "Template descriptor for the BMI, Fitness, Calorie, and Body Fat Health Calculator widget.",
   mimeType: "text/html+skybridge",
   _meta: widgetMeta(widget),
 }));
 
-function createAutoLoanCalculatorServer(): Server {
+function createBmiHealthCalculatorServer(): Server {
   const server = new Server(
     {
-      name: "auto-loan-calculator",
+      name: "bmi-health-calculator",
       version: "0.1.0",
       description:
-        "Auto Loan & Lease Calculator is a comprehensive app for analyzing vehicle financing. It calculates monthly payments for loans and leases, total interest, and amortization. It opens with sensible defaults and supports prompts like ‘calculate car lease’.",
+        "BMI Health Calculator is a comprehensive app for analyzing health metrics.",
     },
     {
       capabilities: {
@@ -641,35 +496,9 @@ function createAutoLoanCalculatorServer(): Server {
       }
 
       // Inject current FRED rate into HTML before sending to ChatGPT
+      // (Logic removed for BMI calculator)
       let htmlToSend = widget.html;
-      let displayRate: number | null = null;
-      if (fredRateCache && fredRateCache.payload && typeof fredRateCache.payload.ratePercent === "number") {
-        displayRate = fredRateCache.payload.ratePercent;
-        console.log(`[MCP Injection] Using cached rate: ${displayRate}%`);
-      } else {
-        const latest = await fetchFredLatestRate();
-        if (latest) {
-          displayRate = Math.round((latest.adjusted) * 10) / 10;
-          console.log(`[MCP Injection] Fetched fresh rate: ${displayRate}%`);
-        } else {
-          console.log(`[MCP Injection] FRED fetch failed, leaving blank`);
-        }
-      }
-      // Only inject if we have a valid live rate. Otherwise leave blank.
-      if (displayRate != null && Number.isFinite(displayRate)) {
-        const rateText = `${displayRate}%`;
-        const beforeLength = htmlToSend.length;
-        htmlToSend = htmlToSend.replace(
-          /(<span\s+class="rate-num">)([^<]*?)(<\/span>)/,
-          (_m: any, p1: string, _p2: string, p3: string) => `${p1}${rateText}${p3}`
-        );
-        const afterLength = htmlToSend.length;
-        const replaced = beforeLength !== afterLength || htmlToSend.includes(`rate-num">${rateText}`);
-        console.log(`[MCP Injection] Injected "${rateText}", replacement success: ${replaced}`);
-      } else {
-        console.log(`[MCP Injection] No valid rate, sending blank badge`);
-      }
-
+      
       if (TURNSTILE_SITE_KEY) {
         htmlToSend = htmlToSend.replace(/__TURNSTILE_SITE_KEY__/g, TURNSTILE_SITE_KEY);
       } else {
@@ -752,7 +581,7 @@ function createAutoLoanCalculatorServer(): Server {
             meta["openai/userText"],
             meta["openai/lastUserMessage"],
             meta["openai/inputText"],
-            meta["openai/requestText"],
+              meta["openai/requestText"],
           ];
           const userText = candidates.find((t) => typeof t === "string" && t.trim().length > 0) || "";
 
@@ -764,82 +593,57 @@ function createAutoLoanCalculatorServer(): Server {
             return Number.isFinite(n) ? Math.round(n) : null;
           };
 
-          // Infer auto_price
-          if (args.auto_price === undefined) {
-            const priceKeywords = /(?:car|auto|vehicle|loan|price|cost|costs)\b/i;
-            const priceRe = /\$?([\d,.]+\s*[kK]?)\$?/g;
-            let match: RegExpExecArray | null;
-            while ((match = priceRe.exec(userText)) !== null) {
-              const windowStart = Math.max(0, match.index - 40);
-              const windowEnd = Math.min(userText.length, priceRe.lastIndex + 40);
-              const windowText = userText.slice(windowStart, windowEnd);
-              if (priceKeywords.test(windowText)) {
-                const parsed = parseAmountToNumber(match[1]);
-                if (parsed && parsed >= 1000 && parsed <= 500000) {
-                  args.auto_price = parsed;
-                  console.log("[Inference] auto_price inferred from user text", { auto_price: parsed, source: userText });
-                  break;
-                }
-              }
+          // Infer height and weight
+          if (args.height_cm === undefined) {
+            // Try to find "180 cm" or "1.8 m" or "5'10"
+            const heightMatch = userText.match(/(\d+)\s*cm\b/i) || userText.match(/(\d+(?:\.\d+)?)\s*m\b/i);
+            if (heightMatch) {
+              let h = parseFloat(heightMatch[1]);
+              if (heightMatch[0].includes("m")) h *= 100; // convert m to cm
+              if (h > 50 && h < 300) args.height_cm = Math.round(h);
+            }
+            // Imperial: 5'10" or 5 ft 10
+            const ftMatch = userText.match(/(\d+)'(\d+)(?:"|'')?/);
+            if (ftMatch) {
+              const ft = parseInt(ftMatch[1], 10);
+              const inch = parseInt(ftMatch[2], 10);
+              args.height_cm = Math.round((ft * 30.48) + (inch * 2.54));
             }
           }
 
-          // Infer down_payment_value
-          if (args.down_payment_value === undefined) {
-            // Allow "downpayment" (one word), "donpayment" (typo), "down payment", etc.
-            const dpRe = /\$?([\d,.]+)\s*(?:down\s*payment|downpayment|down|dp|dwn|dn|donpayment|don\s*payment)\b/i;
-            const dpMatch = userText.match(dpRe);
-            if (dpMatch && dpMatch[1]) {
-              const n = parseAmountToNumber(dpMatch[1]);
-              if (n !== null && n >= 0) {
-                args.down_payment_value = n;
+          if (args.weight_kg === undefined) {
+            // Try to find "75 kg" or "165 lbs"
+            const weightMatch = userText.match(/(\d+(?:\.\d+)?)\s*(kg|kgs|kilo|lbs|lb|pound|pounds)\b/i);
+            if (weightMatch) {
+              let w = parseFloat(weightMatch[1]);
+              const unit = weightMatch[2].toLowerCase();
+              if (unit.startsWith("lb") || unit.startsWith("pound")) {
+                w = w * 0.453592;
               }
+              if (w > 20 && w < 600) args.weight_kg = Math.round(w * 10) / 10;
             }
           }
 
-          // Infer loan_term_months
-          if (args.loan_term_months === undefined) {
-            const termMatch = userText.match(/\b(\d{1,3})\s*[- ]?(?:month|mo)\b/i);
-            if (termMatch && termMatch[1]) {
-              const months = parseInt(termMatch[1], 10);
-              if (months >= 12 && months <= 120) {
-                args.loan_term_months = months;
-              }
-            } else {
-              const yearMatch = userText.match(/\b(\d{1,2})\s*[- ]?(?:year|yr)\b/i);
-              if (yearMatch && yearMatch[1]) {
-                const years = parseInt(yearMatch[1], 10);
-                if (years >= 1 && years <= 10) {
-                  args.loan_term_months = years * 12;
-                }
-              }
+          // Infer age
+          if (args.age_years === undefined) {
+            const ageMatch = userText.match(/\b(\d{1,3})\s*(?:yo|years|year old)\b/i);
+            if (ageMatch) {
+              const age = parseInt(ageMatch[1], 10);
+              if (age > 0 && age < 120) args.age_years = age;
             }
           }
 
-          // Infer interest_rate_pct
-          if (args.interest_rate_pct === undefined) {
-            // Match "5.3%", "5.3 percent", "interest rate of 5.3", "at 5.3"
-            // Relaxed regex to capture rate even if \b boundary is tricky with commas
-            const rateRe = /(?:rate|apr|at|interest)\s*(?:is|of)?\s*:?\s*(\d{1,2}(?:\.\d+)?)\s*%?|(\d{1,2}(?:\.\d+)?)\s*(?:%|percent|pct)/i;
-            const rateMatch = userText.match(rateRe);
-            if (rateMatch) {
-              // Group 1 or Group 2 could be the number
-              const rateStr = rateMatch[1] || rateMatch[2];
-              if (rateStr) {
-                const rate = parseFloat(rateStr);
-                if (rate > 0 && rate < 30) {
-                  args.interest_rate_pct = rate;
-                }
-              }
-            }
+          // Infer gender
+          if (args.gender === undefined) {
+            if (/\b(?:male|man|boy|guy)\b/i.test(userText)) args.gender = "male";
+            else if (/\b(?:female|woman|girl|lady)\b/i.test(userText)) args.gender = "female";
           }
 
-          // Infer purchase_type (lease)
-          if (args.purchase_type === undefined) {
-            if (/\b(?:lease|leasing)\b/i.test(userText)) {
-              args.purchase_type = "lease";
-              console.log("[Inference] purchase_type inferred as lease");
-            }
+          // Infer activity level
+          if (args.activity_level === undefined) {
+             if (/\b(?:sedentary|desk job|no exercise)\b/i.test(userText)) args.activity_level = "sedentary";
+             else if (/\b(?:light|active|exercise)\b/i.test(userText)) args.activity_level = "light";
+             else if (/\b(?:athlete|training|gym)\b/i.test(userText)) args.activity_level = "active";
           }
 
         } catch (e) {
@@ -849,74 +653,56 @@ function createAutoLoanCalculatorServer(): Server {
 
         const responseTime = Date.now() - startTime;
 
-        // Infer likely user query from parameters
-        const inferredQuery = [] as string[];
-        if (args.auto_price) {
-          inferredQuery.push(`auto price: $${args.auto_price.toLocaleString()}`);
-        }
-        if (args.down_payment_value) {
-          inferredQuery.push(`down payment: $${args.down_payment_value.toLocaleString()}`);
-        }
-        if (args.loan_term_months) {
-          inferredQuery.push(`${args.loan_term_months}-month term`);
-        }
-        if (args.interest_rate_pct) {
-          inferredQuery.push(`${args.interest_rate_pct}% APR`);
-        }
-        if (args.state) {
-          inferredQuery.push(`state: ${args.state}`);
-        }
+          // Infer likely user query from parameters
+          const inferredQuery = [] as string[];
+          if (args.height_cm) inferredQuery.push(`height: ${args.height_cm}cm`);
+          if (args.weight_kg) inferredQuery.push(`weight: ${args.weight_kg}kg`);
+          if (args.age_years) inferredQuery.push(`age: ${args.age_years}`);
+          if (args.gender) inferredQuery.push(`gender: ${args.gender}`);
+          if (args.activity_level) inferredQuery.push(`activity: ${args.activity_level}`);
 
-        logAnalytics("tool_call_success", {
-          toolName: request.params.name,
-          params: args,
-          inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "Auto Loan Calculator",
-          responseTime,
-          device: deviceCategory,
-          userLocation: userLocation
-            ? {
-                city: userLocation.city,
-                region: userLocation.region,
-                country: userLocation.country,
-                timezone: userLocation.timezone,
-              }
-            : null,
-          userLocale,
-          userAgent,
-        });
+          logAnalytics("tool_call_success", {
+            toolName: request.params.name,
+            params: args,
+            inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "BMI Health Calculator",
+            responseTime,
 
-        // Use a stable template URI so toolOutput reliably hydrates the component
-        const widgetMetadata = widgetMeta(widget, false);
-        console.log(`[MCP] Tool called: ${request.params.name}, returning templateUri: ${(widgetMetadata as any)["openai/outputTemplate"]}`);
+            device: deviceCategory,
+            userLocation: userLocation
+              ? {
+                  city: userLocation.city,
+                  region: userLocation.region,
+                  country: userLocation.country,
+                  timezone: userLocation.timezone,
+                }
+              : null,
+            userLocale,
+            userAgent,
+          });
 
-        // Build structured content once so we can log it and return it.
-        // For the auto-loan calculator, expose only the fields that are
-        // actually relevant to auto loans so ChatGPT sees a clean API.
-        const structured = {
-          ready: true,
-          timestamp: new Date().toISOString(),
-          currentRate: fredRateCache?.payload?.ratePercent ?? null,
-          // Auto-loan specific parameters
-          auto_price: args.auto_price,
-          down_payment_value: args.down_payment_value,
-          interest_rate_pct: args.interest_rate_pct,
-          loan_term_months: args.loan_term_months,
-          cash_incentives: args.cash_incentives,
-          trade_in_value: args.trade_in_value,
-          trade_in_owed: args.trade_in_owed,
-          state: args.state,
-          sales_tax_pct: args.sales_tax_pct,
-          title_fees: args.title_fees,
-          include_taxes_fees: args.include_taxes_fees,
-          purchase_type: args.purchase_type,
-          // Summary + follow-ups for natural language UX
-          summary: computeSummary(args),
-          suggested_followups: [
-            "Help me reduce my monthly payment",
-            "Compare 36 vs 60 month loan for my inputs",
-            "What if I put more money down?",
-          ],
-        } as const;
+          // Use a stable template URI so toolOutput reliably hydrates the component
+          const widgetMetadata = widgetMeta(widget, false);
+          console.log(`[MCP] Tool called: ${request.params.name}, returning templateUri: ${(widgetMetadata as any)["openai/outputTemplate"]}`);
+
+          // Build structured content once so we can log it and return it.
+          // For the health calculator, expose fields relevant to BMI/Body Fat
+          const structured = {
+            ready: true,
+            timestamp: new Date().toISOString(),
+            height_cm: args.height_cm,
+            weight_kg: args.weight_kg,
+            age_years: args.age_years,
+            gender: args.gender,
+            activity_level: args.activity_level,
+            // Summary + follow-ups for natural language UX
+            summary: computeSummary(args),
+            suggested_followups: [
+              "How much weight should I lose?",
+              "What is a healthy BMI range?",
+              "Calculate body fat percentage",
+              "What is my TDEE?"
+            ],
+          } as const;
 
         // Embed the widget resource in _meta to mirror official examples and improve hydration reliability
         const metaForReturn = {
@@ -937,14 +723,26 @@ function createAutoLoanCalculatorServer(): Server {
 
         // Log success analytics with rental parameters
         try {
-          logAnalytics("tool_call_success", {
-            responseTime,
-            params: request.params.arguments || {},
-            inferredQuery: inferredQuery.join(", "),
-            userLocation,
-            userLocale,
-            device: deviceCategory,
-          });
+          // Check for "empty" result - effectively when no main calculation inputs are provided
+          // This mimics the "filteredSettlements.length === 0" logic from the prior project
+          const hasMainInputs = args.height_cm || args.weight_kg || args.age_years;
+          
+          if (!hasMainInputs) {
+             logAnalytics("tool_call_empty", {
+               toolName: request.params.name,
+               params: request.params.arguments || {},
+               reason: "No calculation inputs provided"
+             });
+          } else {
+             logAnalytics("tool_call_success", {
+               responseTime,
+               params: request.params.arguments || {},
+               inferredQuery: inferredQuery.join(", "),
+               userLocation,
+               userLocale,
+               device: deviceCategory,
+             });
+          }
         } catch {}
 
         return {
@@ -1051,6 +849,7 @@ function evaluateAlerts(logs: AnalyticsEvent[]): AlertEntry[] {
   const dayAgo = now - 24 * 60 * 60 * 1000;
   const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
 
+  // 1. Tool Call Failures
   const toolErrors24h = logs.filter(
     (l) =>
       l.event === "tool_call_error" &&
@@ -1065,6 +864,39 @@ function evaluateAlerts(logs: AnalyticsEvent[]): AlertEntry[] {
     });
   }
 
+  // 2. Parameter Parsing Errors
+  const parseErrorsWeek = logs.filter(
+    (l) =>
+      l.event === "parameter_parse_error" &&
+      new Date(l.timestamp).getTime() >= weekAgo
+  ).length;
+
+  if (parseErrorsWeek > 3) {
+    alerts.push({
+      id: "parse-errors",
+      level: "warning",
+      message: `Parameter parse errors in last 7d: ${parseErrorsWeek} (>3 threshold)`,
+    });
+  }
+
+  // 3. Empty Result Sets (or equivalent for calculator - e.g. missing inputs)
+  const successCalls = logs.filter(
+    (l) => l.event === "tool_call_success" && new Date(l.timestamp).getTime() >= weekAgo
+  );
+  const emptyResults = logs.filter(
+    (l) => l.event === "tool_call_empty" && new Date(l.timestamp).getTime() >= weekAgo
+  ).length;
+
+  const totalCalls = successCalls.length + emptyResults;
+  if (totalCalls > 0 && (emptyResults / totalCalls) > 0.2) {
+    alerts.push({
+      id: "empty-results",
+      level: "warning",
+      message: `Empty result rate ${((emptyResults / totalCalls) * 100).toFixed(1)}% (>20% threshold)`,
+    });
+  }
+
+  // 5. Buttondown Subscription Failures
   const recentSubs = logs.filter(
     (l) =>
       (l.event === "widget_notify_me_subscribe" ||
@@ -1105,24 +937,19 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
       : "N/A";
 
   const paramUsage: Record<string, number> = {};
-  const zipDist: Record<string, number> = {};
-  const loanTypeDist: Record<string, number> = {};
+  const bmiCatDist: Record<string, number> = {};
   
   successLogs.forEach((log) => {
     if (log.params) {
       Object.keys(log.params).forEach((key) => {
         if (log.params[key] !== undefined) {
           paramUsage[key] = (paramUsage[key] || 0) + 1;
-          if (key === "zip_code") {
-            const zip = String(log.params[key]);
-            zipDist[zip] = (zipDist[zip] || 0) + 1;
-          }
-          if (key === "loan_type") {
-            const lt = String(log.params[key]);
-            loanTypeDist[lt] = (loanTypeDist[lt] || 0) + 1;
-          }
         }
       });
+    }
+    if (log.structuredContent?.summary?.bmi_category) {
+       const cat = log.structuredContent.summary.bmi_category;
+       bmiCatDist[cat] = (bmiCatDist[cat] || 0) + 1;
     }
   });
   
@@ -1157,14 +984,33 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
   });
   
   // Clicks per settlement
-  const settlementClicks: Record<string, { name: string; count: number }> = {};
-  widgetEvents.filter(l => l.event === "widget_file_claim_click").forEach((log) => {
-    if (log.settlementId) {
-      if (!settlementClicks[log.settlementId]) {
-        settlementClicks[log.settlementId] = { name: log.settlementName || log.settlementId, count: 0 };
-      }
-      settlementClicks[log.settlementId].count++;
-    }
+  // const settlementClicks: Record<string, { name: string; count: number }> = {};
+  // widgetEvents.filter(l => l.event === "widget_file_claim_click").forEach((log) => {
+  //   if (log.settlementId) {
+  //     if (!settlementClicks[log.settlementId]) {
+  //       settlementClicks[log.settlementId] = { name: log.settlementName || log.settlementId, count: 0 };
+  //     }
+  //     settlementClicks[log.settlementId].count++;
+  //   }
+  // });
+
+  // Calculator Actions
+  const actionCounts: Record<string, number> = {
+    "Calculate": 0,
+    "Subscribe": 0,
+    "Donate": 0, 
+    "Print": 0,
+    "Reset": 0,
+    "Photo Upload": 0
+  };
+
+  widgetEvents.forEach(log => {
+      if (log.event === "widget_calculate_click") actionCounts["Calculate"]++;
+      if (log.event === "widget_notify_me_subscribe") actionCounts["Subscribe"]++;
+      if (log.event === "widget_donate_click") actionCounts["Donate"]++;
+      if (log.event === "widget_print_click") actionCounts["Print"]++;
+      if (log.event === "widget_reset_click") actionCounts["Reset"]++;
+      if (log.event === "widget_photo_upload") actionCounts["Photo Upload"]++;
   });
 
   return `<!DOCTYPE html>
@@ -1172,7 +1018,7 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Auto Loan Calculator Analytics</title>
+  <title>BMI Health Calculator Analytics</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; padding: 20px; }
@@ -1199,7 +1045,7 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 </head>
 <body>
   <div class="container">
-    <h1>📊 Auto Loan Calculator Analytics</h1>
+    <h1>📊 BMI Health Calculator Analytics</h1>
     <p class="subtitle">Last 7 days • Auto-refresh every 60s</p>
     
     <div class="grid">
@@ -1257,16 +1103,16 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 
     <div class="grid" style="margin-bottom: 20px;">
       <div class="card">
-        <h2>ZIP Code Distribution</h2>
+        <h2>BMI Categories</h2>
         <table>
-          <thead><tr><th>ZIP Code</th><th>Count</th></tr></thead>
+          <thead><tr><th>Category</th><th>Count</th></tr></thead>
           <tbody>
-            ${Object.entries(zipDist).length > 0 ? Object.entries(zipDist)
+            ${Object.entries(bmiCatDist).length > 0 ? Object.entries(bmiCatDist)
               .sort((a, b) => b[1] - a[1])
               .map(
-                ([zip, count]) => `
+                ([cat, count]) => `
               <tr>
-                <td>${zip}</td>
+                <td>${cat}</td>
                 <td>${count}</td>
               </tr>
             `
@@ -1276,26 +1122,27 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
         </table>
       </div>
       
-      <div class="card">
-        <h2>Loan Types</h2>
+       <div class="card">
+        <h2>User Actions</h2>
         <table>
-          <thead><tr><th>Loan Type</th><th>Count</th></tr></thead>
+          <thead><tr><th>Action</th><th>Count</th></tr></thead>
           <tbody>
-            ${Object.entries(loanTypeDist).length > 0 ? Object.entries(loanTypeDist)
+            ${Object.entries(actionCounts)
               .sort((a, b) => b[1] - a[1])
               .map(
-                ([lt, count]) => `
+                ([action, count]) => `
               <tr>
-                <td>${lt}</td>
+                <td>${action}</td>
                 <td>${count}</td>
               </tr>
             `
               )
-              .join("") : '<tr><td colspan="2" style="text-align: center; color: #9ca3af;">No data yet</td></tr>'}
+              .join("")}
           </tbody>
         </table>
       </div>
     </div>
+
 
     <div class="card" style="margin-bottom: 20px;">
       <h2>Widget Interactions</h2>
@@ -1380,26 +1227,7 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
         </table>
       </div>
       
-      <div class="card">
-        <h2>File Claim Clicks by Settlement</h2>
-        <table>
-          <thead><tr><th>Settlement</th><th>Clicks</th></tr></thead>
-          <tbody>
-            ${Object.entries(settlementClicks).length > 0 ? Object.entries(settlementClicks)
-              .sort((a, b) => b[1].count - a[1].count)
-              .slice(0, 10)
-              .map(
-                ([id, data]) => `
-              <tr>
-                <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.name}</td>
-                <td>${data.count}</td>
-              </tr>
-            `
-              )
-              .join("") : '<tr><td colspan="2" style="text-align: center; color: #9ca3af;">No data yet</td></tr>'}
-          </tbody>
-        </table>
-      </div>
+      <!-- Replaced File Claim Clicks with empty or other widget data -->
     </div>
 
     <div class="card" style="margin-bottom: 20px;">
@@ -1802,7 +1630,7 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
 
 async function handleSseRequest(res: ServerResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  const server = createAutoLoanCalculatorServer();
+  const server = createBmiHealthCalculatorServer();
   const transport = new SSEServerTransport(postPath, res);
   const sessionId = transport.sessionId;
 
@@ -1921,7 +1749,7 @@ const httpServer = createServer(
 
     // Serve alias for legacy loader path -> our main widget HTML
     if (req.method === "GET" && url.pathname === "/assets/mortgage-calculator-2d2b.html") {
-      const mainAssetPath = path.join(ASSETS_DIR, "auto-loan-calculator.html");
+      const mainAssetPath = path.join(ASSETS_DIR, "bmi-health-calculator.html");
       if (fs.existsSync(mainAssetPath) && fs.statSync(mainAssetPath).isFile()) {
         res.writeHead(200, {
           "Content-Type": "text/html",
@@ -1937,10 +1765,19 @@ const httpServer = createServer(
     if (req.method === "GET" && url.pathname.startsWith("/assets/")) {
       const assetPath = path.join(ASSETS_DIR, url.pathname.slice(8));
       if (fs.existsSync(assetPath) && fs.statSync(assetPath).isFile()) {
-        const ext = path.extname(assetPath);
-        const contentType = ext === ".js" ? "application/javascript" : 
-                           ext === ".css" ? "text/css" : 
-                           ext === ".html" ? "text/html" : "application/octet-stream";
+        const ext = path.extname(assetPath).toLowerCase();
+        const contentTypeMap: Record<string, string> = {
+          ".js": "application/javascript",
+          ".css": "text/css",
+          ".html": "text/html",
+          ".jpg": "image/jpeg",
+          ".jpeg": "image/jpeg",
+          ".png": "image/png",
+          ".gif": "image/gif",
+          ".webp": "image/webp",
+          ".svg": "image/svg+xml"
+        };
+        const contentType = contentTypeMap[ext] || "application/octet-stream";
         res.writeHead(200, { 
           "Content-Type": contentType,
           "Access-Control-Allow-Origin": "*",
@@ -1948,27 +1785,16 @@ const httpServer = createServer(
         });
 
         // If serving the main widget HTML, inject the current rate into the badge
-        if (ext === ".html" && path.basename(assetPath) === "auto-loan-calculator.html") {
+        if (ext === ".html" && path.basename(assetPath) === "bmi-health-calculator.html") {
           try {
             let html = fs.readFileSync(assetPath, "utf8");
-            // Compute the current rate (prefer cache, otherwise fetch)
-            let displayRate: number | null = null;
-            if (fredRateCache && fredRateCache.payload && typeof fredRateCache.payload.ratePercent === "number") {
-              displayRate = fredRateCache.payload.ratePercent;
+            
+            if (TURNSTILE_SITE_KEY) {
+              html = html.replace(/__TURNSTILE_SITE_KEY__/g, TURNSTILE_SITE_KEY);
             } else {
-              const latest = await fetchFredLatestRate();
-              if (latest) {
-                displayRate = Math.round((latest.adjusted) * 10) / 10;
-              }
+              console.warn("[Turnstile] TURNSTILE_SITE_KEY missing; captcha will not render");
             }
-            // Only inject if we have a valid live rate. Otherwise leave blank.
-            if (displayRate != null && Number.isFinite(displayRate)) {
-              const rateText = `${displayRate}%`;
-              html = html.replace(
-                /(<span\s+class=\"rate-num\">)([^<]*?)(<\/span>)/,
-                (_m: any, p1: string, _p2: string, p3: string) => `${p1}${rateText}${p3}`
-              );
-            }
+
             res.end(html);
             return;
           } catch (e) {
@@ -1991,7 +1817,7 @@ httpServer.on("clientError", (err: Error, socket) => {
 });
 
 httpServer.listen(port, () => {
-  console.log(`Auto Loan Calculator MCP server listening on http://localhost:${port}`);
+  console.log(`BMI Health Calculator MCP server listening on http://localhost:${port}`);
   console.log(`  SSE stream: GET http://localhost:${port}${ssePath}`);
   console.log(
     `  Message post endpoint: POST http://localhost:${port}${postPath}?sessionId=...`

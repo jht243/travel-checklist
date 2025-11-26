@@ -509,7 +509,7 @@ var require_react_development = __commonJS({
           }
           return element;
         };
-        function createElement(type, config, children) {
+        function createElement3(type, config, children) {
           var propName;
           var props = {};
           var key = null;
@@ -970,7 +970,7 @@ var require_react_development = __commonJS({
           }
           return lazyType;
         }
-        function forwardRef(render) {
+        function forwardRef3(render) {
           {
             if (render != null && render.$$typeof === REACT_MEMO_TYPE) {
               error("forwardRef requires a render function but received a `memo` component. Instead of forwardRef(memo(...)), use memo(forwardRef(...)).");
@@ -1083,7 +1083,7 @@ var require_react_development = __commonJS({
           }
           return dispatcher.useContext(Context);
         }
-        function useState(initialState) {
+        function useState2(initialState) {
           var dispatcher = resolveDispatcher();
           return dispatcher.useState(initialState);
         }
@@ -1608,7 +1608,7 @@ var require_react_development = __commonJS({
               error("React.createElement: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s", typeString, info);
             }
           }
-          var element = createElement.apply(this, arguments);
+          var element = createElement3.apply(this, arguments);
           if (element == null) {
             return element;
           }
@@ -1868,7 +1868,7 @@ var require_react_development = __commonJS({
         exports.createElement = createElement$1;
         exports.createFactory = createFactory;
         exports.createRef = createRef;
-        exports.forwardRef = forwardRef;
+        exports.forwardRef = forwardRef3;
         exports.isValidElement = isValidElement;
         exports.lazy = lazy;
         exports.memo = memo;
@@ -1886,7 +1886,7 @@ var require_react_development = __commonJS({
         exports.useMemo = useMemo;
         exports.useReducer = useReducer;
         exports.useRef = useRef;
-        exports.useState = useState;
+        exports.useState = useState2;
         exports.useSyncExternalStore = useSyncExternalStore;
         exports.useTransition = useTransition;
         exports.version = ReactVersion;
@@ -2382,9 +2382,9 @@ var require_react_dom_development = __commonJS({
         if (typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== "undefined" && typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart === "function") {
           __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
         }
-        var React2 = require_react();
+        var React3 = require_react();
         var Scheduler = require_scheduler();
-        var ReactSharedInternals = React2.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+        var ReactSharedInternals = React3.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
         var suppressWarning = false;
         function setSuppressWarning(newSuppressWarning) {
           {
@@ -2433,7 +2433,7 @@ var require_react_dom_development = __commonJS({
         var HostPortal = 4;
         var HostComponent = 5;
         var HostText = 6;
-        var Fragment = 7;
+        var Fragment2 = 7;
         var Mode = 8;
         var ContextConsumer = 9;
         var ContextProvider = 10;
@@ -3589,7 +3589,7 @@ var require_react_dom_development = __commonJS({
               return "DehydratedFragment";
             case ForwardRef:
               return getWrappedName$1(type, type.render, "ForwardRef");
-            case Fragment:
+            case Fragment2:
               return "Fragment";
             case HostComponent:
               return type;
@@ -3989,7 +3989,7 @@ var require_react_dom_development = __commonJS({
           {
             if (props.value == null) {
               if (typeof props.children === "object" && props.children !== null) {
-                React2.Children.forEach(props.children, function(child) {
+                React3.Children.forEach(props.children, function(child) {
                   if (child == null) {
                     return;
                   }
@@ -9383,7 +9383,7 @@ var require_react_dom_development = __commonJS({
             }
           }
         }
-        function createElement(type, props, rootContainerElement, parentNamespace) {
+        function createElement3(type, props, rootContainerElement, parentNamespace) {
           var isCustomComponentTag;
           var ownerDocument = getOwnerDocumentFromRootContainer(rootContainerElement);
           var domElement;
@@ -10238,7 +10238,7 @@ var require_react_dom_development = __commonJS({
             }
             parentNamespace = hostContextDev.namespace;
           }
-          var domElement = createElement(type, props, rootContainerInstance, parentNamespace);
+          var domElement = createElement3(type, props, rootContainerInstance, parentNamespace);
           precacheFiberNode(internalInstanceHandle, domElement);
           updateFiberProps(domElement, props);
           return domElement;
@@ -11972,7 +11972,7 @@ var require_react_dom_development = __commonJS({
             }
           }
           function updateFragment2(returnFiber, current2, fragment, lanes, key) {
-            if (current2 === null || current2.tag !== Fragment) {
+            if (current2 === null || current2.tag !== Fragment2) {
               var created = createFiberFromFragment(fragment, returnFiber.mode, lanes, key);
               created.return = returnFiber;
               return created;
@@ -12375,7 +12375,7 @@ var require_react_dom_development = __commonJS({
               if (child.key === key) {
                 var elementType = element.type;
                 if (elementType === REACT_FRAGMENT_TYPE) {
-                  if (child.tag === Fragment) {
+                  if (child.tag === Fragment2) {
                     deleteRemainingChildren(returnFiber, child.sibling);
                     var existing = useFiber(child, element.props.children);
                     existing.return = returnFiber;
@@ -17850,7 +17850,7 @@ var require_react_dom_development = __commonJS({
               var _resolvedProps2 = workInProgress2.elementType === type ? _unresolvedProps2 : resolveDefaultProps(type, _unresolvedProps2);
               return updateForwardRef(current2, workInProgress2, type, _resolvedProps2, renderLanes2);
             }
-            case Fragment:
+            case Fragment2:
               return updateFragment(current2, workInProgress2, renderLanes2);
             case Mode:
               return updateMode(current2, workInProgress2, renderLanes2);
@@ -18122,7 +18122,7 @@ var require_react_dom_development = __commonJS({
             case SimpleMemoComponent:
             case FunctionComponent:
             case ForwardRef:
-            case Fragment:
+            case Fragment2:
             case Mode:
             case Profiler:
             case ContextConsumer:
@@ -22373,7 +22373,7 @@ var require_react_dom_development = __commonJS({
           return fiber;
         }
         function createFiberFromFragment(elements, mode, lanes, key) {
-          var fiber = createFiber(Fragment, elements, key, mode);
+          var fiber = createFiber(Fragment2, elements, key, mode);
           fiber.lanes = lanes;
           return fiber;
         }
@@ -23529,7 +23529,7 @@ var require_react_jsx_runtime_development = __commonJS({
     if (true) {
       (function() {
         "use strict";
-        var React2 = require_react();
+        var React3 = require_react();
         var REACT_ELEMENT_TYPE = Symbol.for("react.element");
         var REACT_PORTAL_TYPE = Symbol.for("react.portal");
         var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
@@ -23555,7 +23555,7 @@ var require_react_jsx_runtime_development = __commonJS({
           }
           return null;
         }
-        var ReactSharedInternals = React2.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+        var ReactSharedInternals = React3.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
         function error(format) {
           {
             {
@@ -24406,10 +24406,10 @@ var require_react_jsx_runtime_development = __commonJS({
           }
         }
         var jsx3 = jsxWithValidationDynamic;
-        var jsxs = jsxWithValidationStatic;
+        var jsxs3 = jsxWithValidationStatic;
         exports.Fragment = REACT_FRAGMENT_TYPE;
         exports.jsx = jsx3;
-        exports.jsxs = jsxs;
+        exports.jsxs = jsxs3;
       })();
     }
   }
@@ -24428,42 +24428,2183 @@ var require_jsx_runtime = __commonJS({
 });
 
 // src/main.tsx
-var import_react2 = __toESM(require_react(), 1);
+var import_react4 = __toESM(require_react(), 1);
 var import_client = __toESM(require_client(), 1);
 
 // src/component.tsx
-var import_react = __toESM(require_react(), 1);
-var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
-function MortgageHelloWorld() {
-  (0, import_react.useEffect)(() => {
-    console.log("Rental Property Hello World widget mounted");
-  }, []);
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-    "div",
-    {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "200px",
-        fontSize: "24px",
-        fontWeight: 600,
-        fontFamily: "system-ui, sans-serif"
-      },
-      children: "hello world"
+var import_react3 = __toESM(require_react(), 1);
+
+// node_modules/lucide-react/dist/esm/createLucideIcon.js
+var import_react2 = __toESM(require_react());
+
+// node_modules/lucide-react/dist/esm/shared/src/utils.js
+var toKebabCase = (string) => string.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+var toCamelCase = (string) => string.replace(
+  /^([A-Z])|[\s-_]+(\w)/g,
+  (match, p1, p2) => p2 ? p2.toUpperCase() : p1.toLowerCase()
+);
+var toPascalCase = (string) => {
+  const camelCase = toCamelCase(string);
+  return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+};
+var mergeClasses = (...classes) => classes.filter((className, index, array) => {
+  return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index;
+}).join(" ").trim();
+var hasA11yProp = (props) => {
+  for (const prop in props) {
+    if (prop.startsWith("aria-") || prop === "role" || prop === "title") {
+      return true;
     }
+  }
+};
+
+// node_modules/lucide-react/dist/esm/Icon.js
+var import_react = __toESM(require_react());
+
+// node_modules/lucide-react/dist/esm/defaultAttributes.js
+var defaultAttributes = {
+  xmlns: "http://www.w3.org/2000/svg",
+  width: 24,
+  height: 24,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2,
+  strokeLinecap: "round",
+  strokeLinejoin: "round"
+};
+
+// node_modules/lucide-react/dist/esm/Icon.js
+var Icon = (0, import_react.forwardRef)(
+  ({
+    color = "currentColor",
+    size = 24,
+    strokeWidth = 2,
+    absoluteStrokeWidth,
+    className = "",
+    children,
+    iconNode,
+    ...rest
+  }, ref) => (0, import_react.createElement)(
+    "svg",
+    {
+      ref,
+      ...defaultAttributes,
+      width: size,
+      height: size,
+      stroke: color,
+      strokeWidth: absoluteStrokeWidth ? Number(strokeWidth) * 24 / Number(size) : strokeWidth,
+      className: mergeClasses("lucide", className),
+      ...!children && !hasA11yProp(rest) && { "aria-hidden": "true" },
+      ...rest
+    },
+    [
+      ...iconNode.map(([tag, attrs]) => (0, import_react.createElement)(tag, attrs)),
+      ...Array.isArray(children) ? children : [children]
+    ]
+  )
+);
+
+// node_modules/lucide-react/dist/esm/createLucideIcon.js
+var createLucideIcon = (iconName, iconNode) => {
+  const Component = (0, import_react2.forwardRef)(
+    ({ className, ...props }, ref) => (0, import_react2.createElement)(Icon, {
+      ref,
+      iconNode,
+      className: mergeClasses(
+        `lucide-${toKebabCase(toPascalCase(iconName))}`,
+        `lucide-${iconName}`,
+        className
+      ),
+      ...props
+    })
   );
+  Component.displayName = toPascalCase(iconName);
+  return Component;
+};
+
+// node_modules/lucide-react/dist/esm/icons/camera.js
+var __iconNode = [
+  [
+    "path",
+    {
+      d: "M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z",
+      key: "18u6gg"
+    }
+  ],
+  ["circle", { cx: "12", cy: "13", r: "3", key: "1vg3eu" }]
+];
+var Camera = createLucideIcon("camera", __iconNode);
+
+// node_modules/lucide-react/dist/esm/icons/chevron-down.js
+var __iconNode2 = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+var ChevronDown = createLucideIcon("chevron-down", __iconNode2);
+
+// node_modules/lucide-react/dist/esm/icons/heart.js
+var __iconNode3 = [
+  [
+    "path",
+    {
+      d: "M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5",
+      key: "mvr1a0"
+    }
+  ]
+];
+var Heart = createLucideIcon("heart", __iconNode3);
+
+// node_modules/lucide-react/dist/esm/icons/loader.js
+var __iconNode4 = [
+  ["path", { d: "M12 2v4", key: "3427ic" }],
+  ["path", { d: "m16.2 7.8 2.9-2.9", key: "r700ao" }],
+  ["path", { d: "M18 12h4", key: "wj9ykh" }],
+  ["path", { d: "m16.2 16.2 2.9 2.9", key: "1bxg5t" }],
+  ["path", { d: "M12 18v4", key: "jadmvz" }],
+  ["path", { d: "m4.9 19.1 2.9-2.9", key: "bwix9q" }],
+  ["path", { d: "M2 12h4", key: "j09sii" }],
+  ["path", { d: "m4.9 4.9 2.9 2.9", key: "giyufr" }]
+];
+var Loader = createLucideIcon("loader", __iconNode4);
+
+// node_modules/lucide-react/dist/esm/icons/mail.js
+var __iconNode5 = [
+  ["path", { d: "m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7", key: "132q7q" }],
+  ["rect", { x: "2", y: "4", width: "20", height: "16", rx: "2", key: "izxlao" }]
+];
+var Mail = createLucideIcon("mail", __iconNode5);
+
+// node_modules/lucide-react/dist/esm/icons/message-square.js
+var __iconNode6 = [
+  [
+    "path",
+    {
+      d: "M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z",
+      key: "18887p"
+    }
+  ]
+];
+var MessageSquare = createLucideIcon("message-square", __iconNode6);
+
+// node_modules/lucide-react/dist/esm/icons/minus.js
+var __iconNode7 = [["path", { d: "M5 12h14", key: "1ays0h" }]];
+var Minus = createLucideIcon("minus", __iconNode7);
+
+// node_modules/lucide-react/dist/esm/icons/play.js
+var __iconNode8 = [
+  [
+    "path",
+    {
+      d: "M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z",
+      key: "10ikf1"
+    }
+  ]
+];
+var Play = createLucideIcon("play", __iconNode8);
+
+// node_modules/lucide-react/dist/esm/icons/plus.js
+var __iconNode9 = [
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "M12 5v14", key: "s699le" }]
+];
+var Plus = createLucideIcon("plus", __iconNode9);
+
+// node_modules/lucide-react/dist/esm/icons/printer.js
+var __iconNode10 = [
+  [
+    "path",
+    {
+      d: "M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2",
+      key: "143wyd"
+    }
+  ],
+  ["path", { d: "M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6", key: "1itne7" }],
+  ["rect", { x: "6", y: "14", width: "12", height: "8", rx: "1", key: "1ue0tg" }]
+];
+var Printer = createLucideIcon("printer", __iconNode10);
+
+// node_modules/lucide-react/dist/esm/icons/rotate-ccw.js
+var __iconNode11 = [
+  ["path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "1357e3" }],
+  ["path", { d: "M3 3v5h5", key: "1xhq8a" }]
+];
+var RotateCcw = createLucideIcon("rotate-ccw", __iconNode11);
+
+// node_modules/lucide-react/dist/esm/icons/shopping-cart.js
+var __iconNode12 = [
+  ["circle", { cx: "8", cy: "21", r: "1", key: "jimo8o" }],
+  ["circle", { cx: "19", cy: "21", r: "1", key: "13723u" }],
+  [
+    "path",
+    {
+      d: "M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12",
+      key: "9zh506"
+    }
+  ]
+];
+var ShoppingCart = createLucideIcon("shopping-cart", __iconNode12);
+
+// src/component.tsx
+var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
+var COLORS = {
+  primary: "#56C596",
+  // Mint Green
+  primaryDark: "#3aa87b",
+  bg: "#FAFAFA",
+  card: "#FFFFFF",
+  textMain: "#1A1A1A",
+  textSecondary: "#9CA3AF",
+  border: "#F3F4F6",
+  inputBg: "#F9FAFB",
+  accentLight: "#E6F7F0",
+  blue: "#5D9CEC",
+  yellow: "#F59E0B",
+  red: "#FF6B6B",
+  orange: "#F2994A",
+  orangeLight: "#FFF7ED",
+  saveGreen: "#4D7C0F",
+  // Dark green for table header
+  tableHeader: "#2563EB"
+  // Blue for table header
+};
+var NumberControl = ({
+  value,
+  onChange,
+  min = 0,
+  max = 300,
+  step = 1,
+  label,
+  suffix,
+  displayValue
+}) => {
+  const handleDec = () => {
+    const num = parseFloat(value) || 0;
+    if (num - step >= min) onChange(Math.round((num - step) * 10) / 10 + "");
+  };
+  const handleInc = () => {
+    const num = parseFloat(value) || 0;
+    if (num + step <= max) onChange(Math.round((num + step) * 10) / 10 + "");
+  };
+  const btnStyle = {
+    width: "32px",
+    height: "32px",
+    borderRadius: "8px",
+    border: "none",
+    backgroundColor: "white",
+    color: COLORS.primary,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+    backgroundColor: COLORS.inputBg,
+    borderRadius: "12px",
+    padding: "6px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "8px",
+    height: "44px"
+  }, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: handleDec, style: btnStyle, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Minus, { size: 16, strokeWidth: 3 }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { flex: 1, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }, children: displayValue ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "16px", fontWeight: 700, color: COLORS.textMain }, children: displayValue }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+        "input",
+        {
+          type: "number",
+          value,
+          onChange: (e) => onChange(e.target.value),
+          style: {
+            width: "40px",
+            border: "none",
+            background: "transparent",
+            textAlign: "center",
+            fontSize: "16px",
+            fontWeight: 700,
+            color: COLORS.textMain,
+            outline: "none"
+          }
+        }
+      ),
+      suffix && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "14px", color: COLORS.textSecondary, fontWeight: 500 }, children: suffix })
+    ] }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: handleInc, style: btnStyle, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, { size: 16, strokeWidth: 3 }) })
+  ] });
+};
+var DEFAULT_VALUES = {
+  units: "US",
+  gender: "male",
+  age: "25",
+  heightCm: "178",
+  weightKg: "75",
+  heightFt: "5",
+  heightIn: "10",
+  weightLbs: "160",
+  neckCm: "50",
+  waistCm: "96",
+  hipCm: "96",
+  neckIn: "19",
+  waistIn: "37",
+  hipIn: "37",
+  activityLevel: "moderate",
+  frontPhoto: "",
+  sidePhoto: ""
+};
+var CALCULATOR_TYPES = [
+  "BMI Calculator",
+  "Ideal Weight Calculator",
+  "Body Fat Calculator",
+  "Calorie Calculator",
+  "My Photo Health Calculator"
+];
+var STORAGE_KEY = "HEALTH_CALCULATOR_DATA";
+var EXPIRATION_DAYS = 30;
+var loadSavedData = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const { data, timestamp } = JSON.parse(saved);
+      const now = (/* @__PURE__ */ new Date()).getTime();
+      const daysDiff = (now - timestamp) / (1e3 * 60 * 60 * 24);
+      if (daysDiff < EXPIRATION_DAYS) {
+        const merged = {
+          "BMI Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null },
+          "Ideal Weight Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null },
+          "Body Fat Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null },
+          "Calorie Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null },
+          "My Photo Health Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null }
+        };
+        Object.keys(merged).forEach((key) => {
+          if (data[key]) {
+            merged[key] = {
+              ...merged[key],
+              ...data[key],
+              values: { ...merged[key].values, ...data[key].values }
+            };
+          }
+        });
+        return merged;
+      }
+    }
+  } catch (e) {
+    console.error("Failed to load saved data", e);
+  }
+  return {
+    "BMI Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null },
+    "Ideal Weight Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null },
+    "Body Fat Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null },
+    "Calorie Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null },
+    "My Photo Health Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null }
+  };
+};
+function Calculator() {
+  const [calculatorType, setCalculatorType] = (0, import_react3.useState)("BMI Calculator");
+  const [isAnalyzing, setIsAnalyzing] = (0, import_react3.useState)(false);
+  const [calculators, setCalculators] = (0, import_react3.useState)(loadSavedData);
+  const [showSubscribeModal, setShowSubscribeModal] = (0, import_react3.useState)(false);
+  const [email, setEmail] = (0, import_react3.useState)("");
+  const [turnstileToken, setTurnstileToken] = (0, import_react3.useState)(null);
+  const [subscribeStatus, setSubscribeStatus] = (0, import_react3.useState)("idle");
+  const [subscribeMessage, setSubscribeMessage] = (0, import_react3.useState)("");
+  const [showFeedbackModal, setShowFeedbackModal] = (0, import_react3.useState)(false);
+  const [feedbackText, setFeedbackText] = (0, import_react3.useState)("");
+  const [feedbackStatus, setFeedbackStatus] = (0, import_react3.useState)("idle");
+  (0, import_react3.useEffect)(() => {
+    if (showSubscribeModal && window.turnstile) {
+      setTimeout(() => {
+        try {
+          window.turnstile.render("#turnstile-widget", {
+            sitekey: window.TURNSTILE_SITE_KEY,
+            callback: function(token) {
+              setTurnstileToken(token);
+            }
+          });
+        } catch (e) {
+        }
+      }, 100);
+    }
+  }, [showSubscribeModal]);
+  const handleSubscribe = async () => {
+    if (!email || !email.includes("@")) {
+      setSubscribeMessage("Please enter a valid email.");
+      setSubscribeStatus("error");
+      return;
+    }
+    if (!turnstileToken) {
+      setSubscribeMessage("Please complete the security check.");
+      setSubscribeStatus("error");
+      return;
+    }
+    setSubscribeStatus("loading");
+    try {
+      const response = await fetch("/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          settlementId: "health-news",
+          settlementName: "Health Calculator News",
+          turnstileToken
+        })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setSubscribeStatus("success");
+        setSubscribeMessage(data.message);
+        setTimeout(() => {
+          setShowSubscribeModal(false);
+          setEmail("");
+          setSubscribeStatus("idle");
+          setSubscribeMessage("");
+          setTurnstileToken(null);
+        }, 3e3);
+      } else {
+        setSubscribeStatus("error");
+        setSubscribeMessage(data.error || "Failed to subscribe.");
+      }
+    } catch (e) {
+      setSubscribeStatus("error");
+      setSubscribeMessage("Network error. Please try again.");
+    }
+  };
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackText.trim()) return;
+    setFeedbackStatus("submitting");
+    try {
+      const response = await fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event: "user_feedback",
+          data: {
+            feedback: feedbackText,
+            calculatorType
+          }
+        })
+      });
+      if (response.ok) {
+        setFeedbackStatus("success");
+        setTimeout(() => {
+          setShowFeedbackModal(false);
+          setFeedbackText("");
+          setFeedbackStatus("idle");
+        }, 2e3);
+      } else {
+        setFeedbackStatus("error");
+      }
+    } catch (e) {
+      setFeedbackStatus("error");
+    }
+  };
+  (0, import_react3.useEffect)(() => {
+    const dataToSave = {
+      data: calculators,
+      timestamp: (/* @__PURE__ */ new Date()).getTime()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+  }, [calculators]);
+  const currentCalc = calculators[calculatorType];
+  const {
+    units,
+    gender,
+    age,
+    activityLevel,
+    heightCm,
+    heightFt,
+    heightIn,
+    weightKg,
+    weightLbs,
+    neckCm,
+    neckIn,
+    waistCm,
+    waistIn,
+    hipCm,
+    hipIn,
+    frontPhoto,
+    sidePhoto
+  } = currentCalc.values;
+  const updateVal = (field, value, logicalGroup) => {
+    setCalculators((prev) => {
+      const next = { ...prev };
+      const group = logicalGroup || field;
+      next[calculatorType] = {
+        ...next[calculatorType],
+        values: {
+          ...next[calculatorType].values,
+          [field]: value
+        },
+        touched: {
+          ...next[calculatorType].touched,
+          [group]: true
+        }
+      };
+      CALCULATOR_TYPES.forEach((type) => {
+        if (type !== calculatorType) {
+          const isTouched = next[type].touched[group];
+          if (!isTouched) {
+            next[type] = {
+              ...next[type],
+              values: {
+                ...next[type].values,
+                [field]: value
+              }
+            };
+          }
+        }
+      });
+      return next;
+    });
+  };
+  const updateResult = (result) => {
+    setCalculators((prev) => ({
+      ...prev,
+      [calculatorType]: {
+        ...prev[calculatorType],
+        result
+      }
+    }));
+  };
+  const calculate = () => {
+    if (calculatorType === "BMI Calculator") {
+      calculateBMI();
+    } else if (calculatorType === "Ideal Weight Calculator") {
+      calculateIdealWeight();
+    } else if (calculatorType === "Body Fat Calculator") {
+      calculateBodyFat();
+    } else if (calculatorType === "Calorie Calculator") {
+      calculateCalories();
+    } else if (calculatorType === "My Photo Health Calculator") {
+      calculatePhotoHealth();
+    }
+  };
+  const calculateBMI = () => {
+    let hM = 0;
+    let wKg = 0;
+    if (units === "Metric") {
+      hM = parseFloat(heightCm) / 100;
+      wKg = parseFloat(weightKg);
+    } else {
+      const totalInches2 = parseFloat(heightFt || "0") * 12 + parseFloat(heightIn || "0");
+      hM = totalInches2 * 0.0254;
+      wKg = parseFloat(weightLbs) * 0.453592;
+    }
+    if (hM > 0 && wKg > 0) {
+      const bmiVal = wKg / (hM * hM);
+      updateResult(parseFloat(bmiVal.toFixed(1)));
+    } else {
+      updateResult(null);
+    }
+  };
+  const calculateIdealWeight = () => {
+    let hInches = 0;
+    if (units === "Metric") {
+      hInches = parseFloat(heightCm) / 2.54;
+    } else {
+      hInches = parseFloat(heightFt || "0") * 12 + parseFloat(heightIn || "0");
+    }
+    if (!hInches || hInches < 0) {
+      updateResult(null);
+      return;
+    }
+    const inchesOver60 = Math.max(0, hInches - 60);
+    const robinson = gender === "male" ? 52 + 1.9 * inchesOver60 : 49 + 1.7 * inchesOver60;
+    const miller = gender === "male" ? 56.2 + 1.41 * inchesOver60 : 53.1 + 1.36 * inchesOver60;
+    const devine = gender === "male" ? 50 + 2.3 * inchesOver60 : 45.5 + 2.3 * inchesOver60;
+    const hamwi = gender === "male" ? 48 + 2.7 * inchesOver60 : 45.5 + 2.2 * inchesOver60;
+    const hM = hInches * 0.0254;
+    const minWeightKg = 18.5 * (hM * hM);
+    const maxWeightKg = 25 * (hM * hM);
+    const format = (kg) => {
+      if (units === "Metric") return `${kg.toFixed(1)} kg`;
+      return `${(kg * 2.20462).toFixed(1)} lbs`;
+    };
+    updateResult({
+      "Robinson (1983)": format(robinson),
+      "Miller (1983)": format(miller),
+      "Devine (1974)": format(devine),
+      "Hamwi (1964)": format(hamwi),
+      "Healthy BMI Range": units === "Metric" ? `${minWeightKg.toFixed(1)} - ${maxWeightKg.toFixed(1)} kg` : `${(minWeightKg * 2.20462).toFixed(1)} - ${(maxWeightKg * 2.20462).toFixed(1)} lbs`
+    });
+  };
+  const calculateBodyFat = () => {
+    let hCm = 0;
+    let wKg = 0;
+    let nCm = 0;
+    let waCm = 0;
+    let hipCmVal = 0;
+    if (units === "Metric") {
+      hCm = parseFloat(heightCm);
+      wKg = parseFloat(weightKg);
+      nCm = parseFloat(neckCm);
+      waCm = parseFloat(waistCm);
+      hipCmVal = parseFloat(hipCm);
+    } else {
+      const totalInches2 = parseFloat(heightFt || "0") * 12 + parseFloat(heightIn || "0");
+      hCm = totalInches2 * 2.54;
+      wKg = parseFloat(weightLbs) * 0.453592;
+      nCm = parseFloat(neckIn) * 2.54;
+      waCm = parseFloat(waistIn) * 2.54;
+      hipCmVal = parseFloat(hipIn) * 2.54;
+    }
+    if (!hCm || !wKg || !nCm || !waCm || gender === "female" && !hipCmVal) {
+      updateResult(null);
+      return;
+    }
+    let bfPercent = 0;
+    if (gender === "male") {
+      const density = 1.0324 - 0.19077 * Math.log10(waCm - nCm) + 0.15456 * Math.log10(hCm);
+      bfPercent = 495 / density - 450;
+    } else {
+      const density = 1.29579 - 0.35004 * Math.log10(waCm + hipCmVal - nCm) + 0.221 * Math.log10(hCm);
+      bfPercent = 495 / density - 450;
+    }
+    bfPercent = Math.max(2, Math.min(60, bfPercent));
+    const hM = hCm / 100;
+    const bmi = wKg / (hM * hM);
+    const bmiBfPercent = 1.2 * bmi + 0.23 * parseFloat(age) - 10.8 * (gender === "male" ? 1 : 0) - 5.4;
+    let category = "";
+    if (gender === "male") {
+      if (bfPercent < 6) category = "Essential";
+      else if (bfPercent < 14) category = "Athletes";
+      else if (bfPercent < 18) category = "Fitness";
+      else if (bfPercent < 25) category = "Average";
+      else category = "Obese";
+    } else {
+      if (bfPercent < 14) category = "Essential";
+      else if (bfPercent < 21) category = "Athletes";
+      else if (bfPercent < 25) category = "Fitness";
+      else if (bfPercent < 32) category = "Average";
+      else category = "Obese";
+    }
+    const fatMass = wKg * (bfPercent / 100);
+    const leanMass = wKg - fatMass;
+    const idealBf = gender === "male" ? 8 + 0.1 * parseFloat(age) : 15 + 0.1 * parseFloat(age);
+    const targetWeight = leanMass / (1 - idealBf / 100);
+    const weightToLose = wKg - targetWeight;
+    const formatWeight = (kg) => {
+      if (units === "Metric") return `${kg.toFixed(1)} kg`;
+      return `${(kg * 2.20462).toFixed(1)} lbs`;
+    };
+    updateResult({
+      percent: bfPercent.toFixed(1),
+      category,
+      fatMass: formatWeight(fatMass),
+      leanMass: formatWeight(leanMass),
+      idealBf: idealBf.toFixed(1),
+      toLose: weightToLose > 0 ? formatWeight(weightToLose) : "0.0 kg",
+      bmiMethod: bmiBfPercent.toFixed(1)
+    });
+  };
+  const calculateCalories = () => {
+    let hCm = 0;
+    let wKg = 0;
+    if (units === "Metric") {
+      hCm = parseFloat(heightCm);
+      wKg = parseFloat(weightKg);
+    } else {
+      const totalInches2 = parseFloat(heightFt || "0") * 12 + parseFloat(heightIn || "0");
+      hCm = totalInches2 * 2.54;
+      wKg = parseFloat(weightLbs) * 0.453592;
+    }
+    if (!hCm || !wKg) {
+      updateResult(null);
+      return;
+    }
+    let bmr = 10 * wKg + 6.25 * hCm - 5 * parseFloat(age);
+    if (gender === "male") bmr += 5;
+    else bmr -= 161;
+    const multipliers = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.465,
+      active: 1.55,
+      very_active: 1.725,
+      extra_active: 1.9
+    };
+    const tdee = Math.round(bmr * multipliers[activityLevel]);
+    updateResult({
+      maintain: tdee,
+      mildLoss: Math.round(tdee * 0.9),
+      weightLoss: Math.round(tdee * 0.8),
+      extremeLoss: Math.round(tdee * 0.61),
+      mildGain: Math.round(tdee * 1.1),
+      weightGain: Math.round(tdee * 1.2),
+      extremeGain: Math.round(tdee * 1.39)
+    });
+  };
+  const analyzeImage = (imageUrl) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve({ width: 0, height: 0, bodyRatio: 0.5, centerMass: 0.5 });
+          return;
+        }
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        let bodyPixels = 0;
+        let totalPixels = 0;
+        let centerX = 0;
+        let centerY = 0;
+        let minX = canvas.width;
+        let maxX = 0;
+        let minY = canvas.height;
+        let maxY = 0;
+        for (let i = 0; i < data.length; i += 16) {
+          const x = i / 4 % canvas.width;
+          const y = Math.floor(i / 4 / canvas.width);
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const a = data[i + 3];
+          if (a < 128) continue;
+          totalPixels++;
+          const brightness = (r + g + b) / 3;
+          const isLikelyBody = brightness > 50 && brightness < 240 && (r > 80 || g > 80 || b > 80);
+          if (isLikelyBody) {
+            bodyPixels++;
+            centerX += x;
+            centerY += y;
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+          }
+        }
+        const bodyWidth = maxX - minX;
+        const bodyHeight = maxY - minY;
+        const bodyRatio = bodyHeight > 0 ? bodyWidth / bodyHeight : 0.5;
+        const centerMass = bodyPixels > 0 ? centerY / bodyPixels / canvas.height : 0.5;
+        resolve({
+          width: bodyWidth,
+          height: bodyHeight,
+          bodyRatio,
+          centerMass
+        });
+      };
+      img.onerror = () => {
+        resolve({ width: 0, height: 0, bodyRatio: 0.5, centerMass: 0.5 });
+      };
+      img.src = imageUrl;
+    });
+  };
+  const calculatePhotoHealth = async () => {
+    if (!frontPhoto && !sidePhoto) {
+      alert("Please upload at least one photo (front or side) to analyze.");
+      return;
+    }
+    setIsAnalyzing(true);
+    try {
+      let frontAnalysis = { width: 0, height: 0, bodyRatio: 0.5, centerMass: 0.5 };
+      let sideAnalysis = { width: 0, height: 0, bodyRatio: 0.5, centerMass: 0.5 };
+      if (frontPhoto) {
+        frontAnalysis = await analyzeImage(frontPhoto);
+      }
+      if (sidePhoto) {
+        sideAnalysis = await analyzeImage(sidePhoto);
+      }
+      const avgBodyRatio = (frontAnalysis.bodyRatio + sideAnalysis.bodyRatio) / 2;
+      const avgCenterMass = (frontAnalysis.centerMass + sideAnalysis.centerMass) / 2;
+      let bmiEstimate = 18.5;
+      if (avgBodyRatio > 0.5) {
+        bmiEstimate = 28 + (avgBodyRatio - 0.5) * 15;
+      } else if (avgBodyRatio > 0.4) {
+        bmiEstimate = 22 + (avgBodyRatio - 0.4) * 60;
+      } else if (avgBodyRatio > 0.3) {
+        bmiEstimate = 18.5 + (avgBodyRatio - 0.3) * 35;
+      } else {
+        bmiEstimate = 16 + avgBodyRatio * 25;
+      }
+      if (avgCenterMass > 0.55) {
+        bmiEstimate += 1.5;
+      } else if (avgCenterMass < 0.45) {
+        bmiEstimate -= 1;
+      }
+      bmiEstimate = Math.max(15, Math.min(35, bmiEstimate));
+      let fitness = "";
+      let tips = [];
+      if (bmiEstimate < 18.5) {
+        fitness = "Visual assessment suggests you may be underweight. Consider consulting a healthcare provider.";
+        tips = [
+          "Focus on nutrient-dense foods to support healthy weight gain.",
+          "Incorporate strength training to build muscle mass.",
+          "Consider working with a nutritionist to develop a healthy meal plan."
+        ];
+      } else if (bmiEstimate >= 18.5 && bmiEstimate < 25) {
+        fitness = "Your body proportions appear to be within a healthy range.";
+        if (avgBodyRatio < 0.38) {
+          fitness += " You appear to have a lean, athletic build.";
+          tips = [
+            "Maintain your current fitness routine.",
+            "Continue focusing on balanced nutrition.",
+            "Consider adding variety to prevent plateaus."
+          ];
+        } else {
+          tips = [
+            "Maintain a balanced diet with regular exercise.",
+            "Focus on both cardiovascular and strength training.",
+            "Stay hydrated and get adequate sleep for recovery."
+          ];
+        }
+      } else if (bmiEstimate >= 25 && bmiEstimate < 30) {
+        fitness = "Visual analysis suggests you may be slightly above ideal weight range.";
+        tips = [
+          "Consider a moderate calorie deficit (300-500 calories/day).",
+          "Increase daily activity with 150+ minutes of moderate exercise per week.",
+          "Focus on whole foods and reduce processed food intake.",
+          "Strength training can help build muscle while losing fat."
+        ];
+      } else {
+        fitness = "Visual assessment indicates you may benefit from a structured weight management plan.";
+        tips = [
+          "Consult with a healthcare provider before starting any weight loss program.",
+          "Aim for gradual weight loss (1-2 lbs per week).",
+          "Combine diet modifications with regular physical activity.",
+          "Consider working with a registered dietitian for personalized guidance."
+        ];
+      }
+      if (avgCenterMass > 0.55) {
+        tips.push("Your body composition suggests focusing on upper body strength training.");
+      } else if (avgCenterMass < 0.45) {
+        tips.push("Consider lower body and core strengthening exercises.");
+      }
+      if (frontPhoto && sidePhoto) {
+        tips.push("Having both front and side views provides a more comprehensive assessment.");
+      }
+      updateResult({
+        bmiEstimate: bmiEstimate.toFixed(1),
+        fitness,
+        tips
+      });
+    } catch (error) {
+      console.error("Error analyzing photos:", error);
+      updateResult({
+        bmiEstimate: "N/A",
+        fitness: "Unable to analyze photos. Please ensure images are clear and well-lit.",
+        tips: [
+          "Make sure photos are taken in good lighting.",
+          "Wear form-fitting clothing for better analysis.",
+          "Stand straight with arms at your sides."
+        ]
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+  const handlePhotoUpload = (e, field) => {
+    if (e.target.files && e.target.files[0]) {
+      const url = URL.createObjectURL(e.target.files[0]);
+      updateVal(field, url);
+    }
+  };
+  const SUPPLEMENTS = [
+    {
+      id: 1,
+      title: "Whey Protein\nIsolate",
+      price: "$29.99",
+      image: "/assets/whey-protein.jpg",
+      link: "https://www.amazon.com/Optimum-Nutrition-Standard-Protein-Isolate/dp/B000QSNYGI/"
+    },
+    {
+      id: 2,
+      title: "Multivitamin\nComplex",
+      price: "$19.95",
+      image: "/assets/multivitamin.jpg",
+      link: "https://www.amazon.com/Amazon-Brand-Solimo-Multivitamin-Gummies/dp/B07JGW2JKF/"
+    },
+    {
+      id: 3,
+      title: "Omega-3\nFish Oil",
+      price: "$24.50",
+      image: "/assets/fish-oil.jpg",
+      link: "https://www.amazon.com/Nature-Made-Strength-Softgels-count/dp/B004U3Y9FM/"
+    }
+  ];
+  const clearInputs = () => {
+    updateResult(null);
+    setCalculators((prev) => {
+      const next = { ...prev };
+      next[calculatorType] = {
+        values: { ...DEFAULT_VALUES },
+        touched: {},
+        result: null
+      };
+      return next;
+    });
+  };
+  const totalInches = (parseInt(heightFt) || 0) * 12 + (parseInt(heightIn) || 0);
+  const handleTotalInchesChange = (val) => {
+    const total = parseInt(val);
+    if (!isNaN(total)) {
+      const ft = Math.floor(total / 12);
+      const inches = total % 12;
+      setCalculators((prev) => {
+        const next = { ...prev };
+        const group = "height";
+        next[calculatorType].values.heightFt = ft.toString();
+        next[calculatorType].values.heightIn = inches.toString();
+        next[calculatorType].touched.height = true;
+        CALCULATOR_TYPES.forEach((type) => {
+          if (type !== calculatorType && !next[type].touched.height) {
+            next[type].values.heightFt = ft.toString();
+            next[type].values.heightIn = inches.toString();
+          }
+        });
+        return next;
+      });
+    }
+  };
+  const isBMI = calculatorType === "BMI Calculator";
+  const isIdeal = calculatorType === "Ideal Weight Calculator";
+  const isBF = calculatorType === "Body Fat Calculator";
+  const isCalorie = calculatorType === "Calorie Calculator";
+  const isPhoto = calculatorType === "My Photo Health Calculator";
+  const calculatedBmi = isBMI ? currentCalc.result : null;
+  const idealWeights = isIdeal ? currentCalc.result : null;
+  const bodyFatResult = isBF ? currentCalc.result : null;
+  const calorieResult = isCalorie ? currentCalc.result : null;
+  const photoResult = isPhoto ? currentCalc.result : null;
+  let bmiCategory = "";
+  let bmiColor = COLORS.primary;
+  const BMI_SEGMENTS = [
+    { label: "Underweight", min: 14, max: 18.5, color: COLORS.blue, range: "< 18.5" },
+    { label: "Normal", min: 18.5, max: 25, color: COLORS.primary, range: "18.5 \u2013 24.9" },
+    { label: "Overweight", min: 25, max: 30, color: COLORS.yellow, range: "25 \u2013 29.9" },
+    { label: "Obesity", min: 30, max: 40, color: COLORS.red, range: "30 +" }
+  ];
+  const BMI_MIN = BMI_SEGMENTS[0].min;
+  const BMI_MAX = BMI_SEGMENTS[BMI_SEGMENTS.length - 1].max;
+  const clampPercent = (val) => Math.max(0, Math.min(100, val));
+  const bmiPointerPercent = isBMI && calculatedBmi !== null ? clampPercent((calculatedBmi - BMI_MIN) / (BMI_MAX - BMI_MIN) * 100) : 0;
+  if (isBMI && calculatedBmi !== null) {
+    if (calculatedBmi < 18.5) {
+      bmiCategory = "Underweight";
+      bmiColor = COLORS.blue;
+    } else if (calculatedBmi >= 18.5 && calculatedBmi < 25) {
+      bmiCategory = "Normal";
+      bmiColor = COLORS.primary;
+    } else if (calculatedBmi >= 25 && calculatedBmi < 30) {
+      bmiCategory = "Overweight";
+      bmiColor = COLORS.yellow;
+    } else {
+      bmiCategory = "Obesity";
+      bmiColor = COLORS.red;
+    }
+  }
+  const getIdealWeightRangeText = () => {
+    let hInches = 0;
+    if (units === "Metric") {
+      hInches = parseFloat(heightCm) / 2.54;
+    } else {
+      hInches = parseFloat(heightFt || "0") * 12 + parseFloat(heightIn || "0");
+    }
+    if (!hInches) return null;
+    const hM = hInches * 0.0254;
+    const minWeightKg = 18.5 * (hM * hM);
+    const maxWeightKg = 25 * (hM * hM);
+    if (units === "Metric") {
+      return `${minWeightKg.toFixed(1)} - ${maxWeightKg.toFixed(1)} kg`;
+    } else {
+      return `${(minWeightKg * 2.20462).toFixed(1)} - ${(maxWeightKg * 2.20462).toFixed(1)} lbs`;
+    }
+  };
+  const styles = {
+    container: {
+      width: "100%",
+      maxWidth: "600px",
+      margin: "0 auto",
+      backgroundColor: COLORS.bg,
+      minHeight: "100vh",
+      fontFamily: "'Inter', sans-serif",
+      padding: "20px",
+      boxSizing: "border-box"
+    },
+    title: {
+      fontSize: "28px",
+      fontWeight: 800,
+      color: COLORS.textMain,
+      marginBottom: "10px",
+      textAlign: "left"
+    },
+    subheader: {
+      fontSize: "14px",
+      color: COLORS.textSecondary,
+      marginBottom: "20px",
+      marginTop: "-5px"
+    },
+    dropdownWrapper: {
+      position: "relative",
+      marginBottom: "20px"
+    },
+    dropdownSelect: {
+      width: "100%",
+      padding: "12px",
+      borderRadius: "12px",
+      backgroundColor: "white",
+      border: `1px solid ${COLORS.orangeLight}`,
+      fontSize: "16px",
+      fontWeight: 600,
+      color: COLORS.textMain,
+      appearance: "none",
+      cursor: "pointer",
+      boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
+    },
+    dropdownIcon: {
+      position: "absolute",
+      right: "12px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      pointerEvents: "none",
+      color: COLORS.orange
+    },
+    card: {
+      backgroundColor: COLORS.card,
+      borderRadius: "24px",
+      padding: "24px",
+      boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)",
+      marginBottom: "20px"
+    },
+    tabs: {
+      display: "flex",
+      marginBottom: "20px",
+      backgroundColor: "#F3F4F6",
+      borderRadius: "12px",
+      padding: "4px"
+    },
+    tab: (isActive) => ({
+      flex: 1,
+      padding: "10px 20px",
+      cursor: "pointer",
+      fontWeight: 600,
+      color: isActive ? COLORS.textMain : COLORS.textSecondary,
+      backgroundColor: isActive ? COLORS.card : "transparent",
+      borderRadius: "8px",
+      textAlign: "center",
+      transition: "all 0.2s",
+      boxShadow: isActive ? "0 2px 8px rgba(0,0,0,0.05)" : "none"
+    }),
+    row: {
+      display: "flex",
+      alignItems: "center",
+      marginBottom: "20px",
+      gap: "16px"
+    },
+    column: {
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px"
+    },
+    label: {
+      fontWeight: 600,
+      color: COLORS.textMain,
+      fontSize: "15px"
+    },
+    toggleContainer: {
+      display: "flex",
+      gap: "4px",
+      backgroundColor: COLORS.inputBg,
+      borderRadius: "12px",
+      padding: "4px",
+      height: "44px",
+      alignItems: "center",
+      boxSizing: "border-box"
+    },
+    toggleBtn: (isActive) => ({
+      flex: 1,
+      height: "100%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: "8px",
+      cursor: "pointer",
+      fontSize: "14px",
+      fontWeight: 600,
+      color: isActive ? COLORS.textMain : COLORS.textSecondary,
+      backgroundColor: isActive ? "white" : "transparent",
+      boxShadow: isActive ? "0 2px 4px rgba(0,0,0,0.05)" : "none",
+      transition: "all 0.2s"
+    }),
+    buttonRow: {
+      display: "flex",
+      gap: "12px",
+      marginTop: "10px"
+    },
+    calcButton: {
+      flex: 1,
+      backgroundColor: COLORS.primary,
+      color: "white",
+      border: "none",
+      padding: "14px",
+      borderRadius: "16px",
+      fontSize: "16px",
+      fontWeight: 700,
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "8px",
+      boxShadow: "0 4px 12px rgba(86, 197, 150, 0.2)"
+    },
+    clearButton: {
+      backgroundColor: "transparent",
+      color: COLORS.textSecondary,
+      border: "1px solid #E5E7EB",
+      padding: "14px 24px",
+      borderRadius: "16px",
+      fontSize: "16px",
+      fontWeight: 600,
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    },
+    resultCard: {
+      backgroundColor: COLORS.card,
+      borderRadius: "24px",
+      padding: "24px",
+      boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)",
+      marginTop: "24px"
+    },
+    resultHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "20px",
+      borderBottom: `1px solid ${COLORS.border}`,
+      paddingBottom: "16px"
+    },
+    resultTitle: {
+      fontSize: "18px",
+      fontWeight: 700,
+      color: COLORS.textMain
+    },
+    resultContentRow: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "16px",
+      // Reduced gap
+      marginBottom: "30px"
+    },
+    bmiValueContainer: {
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      // Centered items
+      minWidth: "80px",
+      // Reduced minWidth
+      textAlign: "center"
+    },
+    bmiValue: {
+      fontSize: "48px",
+      fontWeight: 800,
+      color: COLORS.textMain,
+      lineHeight: "1",
+      marginBottom: "4px"
+    },
+    bmiCat: {
+      color: bmiColor,
+      fontWeight: 700,
+      fontSize: "18px",
+      marginTop: "0"
+    },
+    bmiBarWrapper: {
+      flex: 1,
+      maxWidth: "400px"
+      // Constrain width for better centering
+    },
+    bmiBarContainer: {
+      position: "relative",
+      paddingTop: "28px",
+      // Reduced padding
+      marginBottom: "8px"
+    },
+    bmiBarTrack: {
+      width: "100%",
+      height: "12px",
+      // Slightly thinner for sleeker look
+      borderRadius: "6px",
+      overflow: "hidden",
+      display: "flex",
+      boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.05)",
+      position: "relative"
+    },
+    bmiSegment: {
+      height: "100%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    },
+    bmiPointer: (percent) => ({
+      position: "absolute",
+      left: `${percent}%`,
+      top: "4px",
+      // Positioned above the track
+      transform: "translateX(-50%)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      zIndex: 10
+    }),
+    bmiPointerLabel: {
+      fontSize: "12px",
+      fontWeight: 800,
+      color: COLORS.textMain,
+      marginBottom: "2px",
+      whiteSpace: "nowrap"
+    },
+    bmiPointerShape: {
+      width: "0",
+      height: "0",
+      borderLeft: "6px solid transparent",
+      borderRight: "6px solid transparent",
+      borderTop: `8px solid ${COLORS.textMain}`
+    },
+    bmiSegmentLabelRow: {
+      display: "grid",
+      gridTemplateColumns: "repeat(4, 1fr)",
+      gap: "8px",
+      marginTop: "12px"
+    },
+    bmiSegmentLabel: {
+      textAlign: "center",
+      fontSize: "12px",
+      fontWeight: 700,
+      color: COLORS.textMain,
+      lineHeight: "1.2"
+    },
+    bmiSegmentRange: {
+      display: "block",
+      fontSize: "11px",
+      fontWeight: 500,
+      color: COLORS.textSecondary
+    },
+    list: {
+      fontSize: "14px",
+      lineHeight: "1.8",
+      color: COLORS.textSecondary,
+      backgroundColor: COLORS.inputBg,
+      padding: "16px",
+      borderRadius: "16px"
+    },
+    listItem: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginBottom: "8px",
+      borderBottom: "1px dashed #E5E7EB",
+      paddingBottom: "8px"
+    },
+    // Table Styles
+    table: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: "14px",
+      marginTop: "10px"
+    },
+    th: {
+      textAlign: "left",
+      padding: "12px 16px",
+      backgroundColor: "#2563EB",
+      // Blue header like image
+      color: "white",
+      fontWeight: 600,
+      textTransform: "uppercase",
+      fontSize: "12px",
+      letterSpacing: "0.5px",
+      "&:first-child": {
+        borderTopLeftRadius: "8px"
+      },
+      "&:last-child": {
+        borderTopRightRadius: "8px"
+      }
+    },
+    td: {
+      padding: "12px 16px",
+      borderBottom: "1px solid #E5E7EB",
+      color: COLORS.textMain,
+      fontWeight: 500
+    },
+    tdValue: {
+      padding: "12px 16px",
+      borderBottom: "1px solid #E5E7EB",
+      color: "#15803D",
+      // Green text for values
+      fontWeight: 700,
+      textAlign: "right"
+    },
+    idealResultHeader: {
+      backgroundColor: "#4D7C0F",
+      // Green header like image
+      color: "white",
+      padding: "12px 16px",
+      fontSize: "18px",
+      fontWeight: 700,
+      borderTopLeftRadius: "12px",
+      borderTopRightRadius: "12px",
+      marginBottom: "16px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    },
+    // Color bar for Body Fat
+    colorBar: {
+      width: "100%",
+      height: "12px",
+      borderRadius: "6px",
+      background: `linear-gradient(to right, 
+        ${COLORS.blue} 0%, 
+        ${COLORS.primary} 25%, 
+        ${COLORS.yellow} 50%, 
+        ${COLORS.orange} 75%,
+        ${COLORS.red} 100%)`,
+      position: "relative",
+      marginTop: "10px",
+      marginBottom: "24px"
+    },
+    colorBarPointer: (percent) => ({
+      position: "absolute",
+      left: `${Math.min(100, Math.max(0, percent / 40 * 100))}%`,
+      // Scale 0-40% roughly to bar
+      top: "-8px",
+      transform: "translateX(-50%)",
+      width: "0",
+      height: "0",
+      borderLeft: "8px solid transparent",
+      borderRight: "8px solid transparent",
+      borderTop: `10px solid ${COLORS.textMain}`
+    }),
+    footer: {
+      display: "flex",
+      justifyContent: "center",
+      gap: "24px",
+      marginTop: "40px",
+      paddingTop: "24px",
+      borderTop: `1px solid ${COLORS.border}`
+    },
+    footerBtn: {
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: COLORS.textSecondary,
+      fontSize: "14px",
+      fontWeight: 600,
+      transition: "color 0.2s",
+      padding: "8px"
+    },
+    photoUploadArea: {
+      border: `2px dashed ${COLORS.primary}`,
+      borderRadius: "12px",
+      backgroundColor: COLORS.accentLight,
+      height: "120px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      transition: "all 0.2s",
+      position: "relative"
+    },
+    sectionTitle: {
+      fontSize: "20px",
+      fontWeight: 700,
+      color: COLORS.textMain,
+      marginBottom: "16px",
+      paddingLeft: "4px"
+    },
+    productGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+      gap: "16px"
+    },
+    productCard: {
+      backgroundColor: "white",
+      borderRadius: "16px",
+      padding: "16px",
+      boxShadow: "0 4px 20px -4px rgba(0,0,0,0.1)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      transition: "transform 0.2s",
+      cursor: "pointer"
+    },
+    productImageArea: {
+      width: "100%",
+      aspectRatio: "1/1",
+      backgroundColor: "transparent",
+      borderRadius: "12px",
+      marginBottom: "12px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+      padding: "10px",
+      boxSizing: "border-box"
+    },
+    productTitle: {
+      fontSize: "14px",
+      fontWeight: 600,
+      color: COLORS.textMain,
+      marginBottom: "4px",
+      textAlign: "center",
+      lineHeight: "1.3",
+      whiteSpace: "pre-wrap",
+      height: "36px",
+      // Force 2 lines height roughly
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    },
+    productPrice: {
+      fontSize: "14px",
+      fontWeight: 700,
+      color: COLORS.primary,
+      marginBottom: "12px"
+    },
+    buyButton: {
+      width: "100%",
+      backgroundColor: COLORS.blue,
+      color: "white",
+      border: "none",
+      padding: "8px",
+      borderRadius: "8px",
+      fontSize: "12px",
+      fontWeight: 600,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "6px",
+      textDecoration: "none",
+      cursor: "pointer",
+      transition: "opacity 0.2s"
+    },
+    modalOverlay: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1e3,
+      padding: "20px"
+    },
+    modalContent: {
+      backgroundColor: "white",
+      borderRadius: "24px",
+      padding: "32px",
+      width: "100%",
+      maxWidth: "400px",
+      boxShadow: "0 20px 60px -10px rgba(0,0,0,0.2)",
+      position: "relative"
+    },
+    modalClose: {
+      position: "absolute",
+      top: "20px",
+      right: "20px",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: COLORS.textSecondary,
+      padding: "4px"
+    },
+    input: {
+      width: "100%",
+      padding: "12px 16px",
+      borderRadius: "12px",
+      border: `1px solid ${COLORS.border}`,
+      fontSize: "16px",
+      backgroundColor: COLORS.inputBg,
+      color: COLORS.textMain,
+      marginBottom: "16px",
+      boxSizing: "border-box",
+      outline: "none"
+    },
+    headerRow: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "10px"
+    },
+    subscribeBtn: {
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      padding: "8px 12px",
+      backgroundColor: COLORS.inputBg,
+      color: COLORS.primary,
+      borderRadius: "8px",
+      border: "none",
+      fontSize: "12px",
+      fontWeight: 600,
+      cursor: "pointer",
+      textDecoration: "none",
+      transition: "background-color 0.2s"
+    }
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.container, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.headerRow, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.title, children: calculatorType }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.subscribeBtn, className: "btn-press", onClick: () => setShowSubscribeModal(true), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mail, { size: 14 }),
+        "Subscribe To Health News"
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.subheader, children: isBMI ? "Use this calculator to determine your Body Mass Index." : isIdeal ? "Use this calculator to compute ideal body weight ranges." : isBF ? "Use this calculator to estimate your body fat percentage." : isPhoto ? "Upload photos to get an AI-powered health assessment." : "Use this calculator to estimate daily calorie needs." }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.dropdownWrapper, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+        "select",
+        {
+          style: styles.dropdownSelect,
+          value: calculatorType,
+          onChange: (e) => {
+            setCalculatorType(e.target.value);
+          },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { children: "BMI Calculator" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { children: "Ideal Weight Calculator" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { children: "Body Fat Calculator" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { children: "Calorie Calculator" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { children: "My Photo Health Calculator" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.dropdownIcon, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, { size: 20 }) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+      !isPhoto && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.tabs, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "div",
+          {
+            style: styles.tab(units === "US"),
+            onClick: () => updateVal("units", "US"),
+            children: "US Units"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "div",
+          {
+            style: styles.tab(units === "Metric"),
+            onClick: () => updateVal("units", "Metric"),
+            children: "Metric Units"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.card, children: [
+        !isPhoto && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.row, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.column, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.label, children: "Age" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              NumberControl,
+              {
+                value: age,
+                onChange: (val) => updateVal("age", val),
+                min: 2,
+                max: 120,
+                label: "Age",
+                suffix: "yrs"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.column, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.label, children: "Gender" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.toggleContainer, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "div",
+                {
+                  style: styles.toggleBtn(gender === "male"),
+                  onClick: () => updateVal("gender", "male"),
+                  children: "Male"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "div",
+                {
+                  style: styles.toggleBtn(gender === "female"),
+                  onClick: () => updateVal("gender", "female"),
+                  children: "Female"
+                }
+              )
+            ] })
+          ] })
+        ] }),
+        !isPhoto && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.row, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.column, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.label, children: "Height" }),
+              units === "US" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                NumberControl,
+                {
+                  value: totalInches.toString(),
+                  onChange: handleTotalInchesChange,
+                  min: 12,
+                  max: 108,
+                  displayValue: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { display: "flex", alignItems: "center", gap: 2 }, children: [
+                    heightFt,
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: 14, color: COLORS.textSecondary, marginRight: 6 }, children: "'" }),
+                    heightIn,
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: 14, color: COLORS.textSecondary }, children: '"' })
+                  ] })
+                }
+              ) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                NumberControl,
+                {
+                  value: heightCm,
+                  onChange: (val) => updateVal("heightCm", val, "height"),
+                  min: 50,
+                  max: 300,
+                  suffix: "cm"
+                }
+              )
+            ] }),
+            (isBMI || isBF || isCalorie) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.column, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.label, children: "Weight" }),
+              units === "US" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                NumberControl,
+                {
+                  value: weightLbs,
+                  onChange: (val) => updateVal("weightLbs", val, "weight"),
+                  min: 20,
+                  max: 500,
+                  suffix: "lbs"
+                }
+              ) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                NumberControl,
+                {
+                  value: weightKg,
+                  onChange: (val) => updateVal("weightKg", val, "weight"),
+                  min: 10,
+                  max: 300,
+                  suffix: "kg"
+                }
+              )
+            ] })
+          ] }),
+          isCalorie && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: "20px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { ...styles.label, marginBottom: "8px" }, children: "Activity" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.dropdownWrapper, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                "select",
+                {
+                  style: styles.dropdownSelect,
+                  value: activityLevel,
+                  onChange: (e) => updateVal("activityLevel", e.target.value),
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "sedentary", children: "Sedentary: little or no exercise" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "light", children: "Light: exercise 1-3 times/week" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "moderate", children: "Moderate: exercise 4-5 times/week" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "active", children: "Active: daily exercise or intense exercise 3-4 times/week" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "very_active", children: "Very Active: intense exercise 6-7 times/week" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "extra_active", children: "Extra Active: very intense exercise daily, or physical job" })
+                  ]
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.dropdownIcon, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, { size: 20 }) })
+            ] })
+          ] }),
+          isBF && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.row, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.column, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.label, children: "Neck" }),
+                units === "US" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  NumberControl,
+                  {
+                    value: neckIn,
+                    onChange: (val) => updateVal("neckIn", val, "neck"),
+                    min: 5,
+                    max: 30,
+                    suffix: "in"
+                  }
+                ) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  NumberControl,
+                  {
+                    value: neckCm,
+                    onChange: (val) => updateVal("neckCm", val, "neck"),
+                    min: 10,
+                    max: 80,
+                    suffix: "cm"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.column, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.label, children: "Waist" }),
+                units === "US" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  NumberControl,
+                  {
+                    value: waistIn,
+                    onChange: (val) => updateVal("waistIn", val, "waist"),
+                    min: 10,
+                    max: 80,
+                    suffix: "in"
+                  }
+                ) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  NumberControl,
+                  {
+                    value: waistCm,
+                    onChange: (val) => updateVal("waistCm", val, "waist"),
+                    min: 20,
+                    max: 200,
+                    suffix: "cm"
+                  }
+                )
+              ] })
+            ] }),
+            gender === "female" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.row, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.column, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.label, children: "Hip" }),
+                units === "US" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  NumberControl,
+                  {
+                    value: hipIn,
+                    onChange: (val) => updateVal("hipIn", val, "hip"),
+                    min: 10,
+                    max: 80,
+                    suffix: "in"
+                  }
+                ) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  NumberControl,
+                  {
+                    value: hipCm,
+                    onChange: (val) => updateVal("hipCm", val, "hip"),
+                    min: 20,
+                    max: 200,
+                    suffix: "cm"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.column }),
+              " "
+            ] })
+          ] })
+        ] }),
+        isPhoto && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.row, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.column, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.label, children: "Front Photo" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { style: { ...styles.photoUploadArea, backgroundImage: frontPhoto ? `url(${frontPhoto})` : "none", backgroundSize: "cover", backgroundPosition: "center" }, children: [
+              !frontPhoto && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Camera, { size: 32, color: COLORS.primary, style: { marginBottom: 8 } }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: 12, color: COLORS.primary, fontWeight: 600 }, children: "Tap to Upload" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "input",
+                {
+                  type: "file",
+                  accept: "image/*",
+                  style: { display: "none" },
+                  onChange: (e) => handlePhotoUpload(e, "frontPhoto")
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.column, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.label, children: "Side Photo" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { style: { ...styles.photoUploadArea, backgroundImage: sidePhoto ? `url(${sidePhoto})` : "none", backgroundSize: "cover", backgroundPosition: "center" }, children: [
+              !sidePhoto && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Camera, { size: 32, color: COLORS.primary, style: { marginBottom: 8 } }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: 12, color: COLORS.primary, fontWeight: 600 }, children: "Tap to Upload" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "input",
+                {
+                  type: "file",
+                  accept: "image/*",
+                  style: { display: "none" },
+                  onChange: (e) => handlePhotoUpload(e, "sidePhoto")
+                }
+              )
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.buttonRow, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "btn-press", style: styles.calcButton, onClick: calculate, disabled: isAnalyzing, children: isAnalyzing ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Loader, { size: 20, className: "spin" }),
+          " Analyzing..."
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+          isPhoto ? "Analyze My Photo" : "Analyze",
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Play, { size: 20, fill: "white" })
+        ] }) }) })
+      ] })
+    ] }),
+    isBMI && calculatedBmi !== null && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.resultCard, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.resultHeader, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: styles.resultTitle, children: "Your Result" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.resultContentRow, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.bmiValueContainer, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.bmiValue, children: calculatedBmi }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.bmiCat, children: bmiCategory })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.bmiBarWrapper, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.bmiBarContainer, children: [
+            calculatedBmi !== null && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.bmiPointer(bmiPointerPercent), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.bmiPointerLabel, children: calculatedBmi }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.bmiPointerShape })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.bmiBarTrack, children: BMI_SEGMENTS.map((segment) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              "div",
+              {
+                style: {
+                  ...styles.bmiSegment,
+                  backgroundColor: segment.color,
+                  flex: segment.max - segment.min
+                }
+              },
+              segment.label
+            )) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.bmiSegmentLabelRow, children: BMI_SEGMENTS.map((segment) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.bmiSegmentLabel, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: segment.label }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: styles.bmiSegmentRange, children: segment.range })
+          ] }, `${segment.label}-label`)) })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.list, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.listItem, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Healthy BMI range" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 600, color: COLORS.textMain }, children: "18.5 - 25 kg/m\xB2" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.listItem, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Healthy weight" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 600, color: COLORS.textMain }, children: getIdealWeightRangeText() })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { ...styles.listItem, borderBottom: "none", marginBottom: 0 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Ponderal Index" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { fontWeight: 600, color: COLORS.textMain }, children: [
+            (calculatedBmi / (parseFloat(heightCm || "178") / 100)).toFixed(1),
+            " kg/m\xB3"
+          ] })
+        ] })
+      ] })
+    ] }),
+    isIdeal && idealWeights && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.resultCard, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.resultHeader, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: styles.resultTitle, children: "Your Result" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { marginBottom: "16px", fontSize: "14px", color: COLORS.textSecondary }, children: "The ideal weight based on popular formulas:" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.list, children: Object.entries(idealWeights).map(([key, val], index, arr) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+        ...styles.listItem,
+        borderBottom: index === arr.length - 1 ? "none" : styles.listItem.borderBottom,
+        marginBottom: index === arr.length - 1 ? 0 : styles.listItem.marginBottom
+      }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: key }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 600, color: COLORS.textMain }, children: val })
+      ] }, key)) })
+    ] }),
+    isBF && bodyFatResult && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "24px", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)", borderRadius: "12px", overflow: "hidden", backgroundColor: "white" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.idealResultHeader, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Result" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { padding: "0 24px 24px 24px" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: "24px", fontWeight: 800, color: "#15803D", marginBottom: "8px" }, children: [
+          "Body Fat: ",
+          bodyFatResult.percent,
+          "%"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { textAlign: "center", marginBottom: "24px", position: "relative" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: "14px", fontWeight: 700, marginBottom: "4px" }, children: [
+            bodyFatResult.percent,
+            "%"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.colorBar, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.colorBarPointer(parseFloat(bodyFatResult.percent)) }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", fontSize: "10px", color: COLORS.textSecondary }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Essential" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Athletes" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Fitness" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Average" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Obese" })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("table", { style: styles.table, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tbody", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: styles.td, children: "Body Fat (U.S. Navy Method)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("td", { style: { ...styles.tdValue, color: COLORS.textMain }, children: [
+              bodyFatResult.percent,
+              "%"
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: styles.td, children: "Body Fat Category" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: { ...styles.tdValue, color: COLORS.textMain }, children: bodyFatResult.category })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: styles.td, children: "Body Fat Mass" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: { ...styles.tdValue, color: COLORS.textMain }, children: bodyFatResult.fatMass })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: styles.td, children: "Lean Body Mass" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: { ...styles.tdValue, color: COLORS.textMain }, children: bodyFatResult.leanMass })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: styles.td, children: "Ideal Body Fat for Given Age (Jackson & Pollock)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("td", { style: { ...styles.tdValue, color: COLORS.textMain }, children: [
+              bodyFatResult.idealBf,
+              "%"
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: styles.td, children: "Body Fat to Lose to Reach Ideal" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: { ...styles.tdValue, color: COLORS.textMain }, children: bodyFatResult.toLose })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: { ...styles.td, borderBottom: "none" }, children: "Body Fat (BMI method)" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("td", { style: { ...styles.tdValue, borderBottom: "none", color: COLORS.textMain }, children: [
+              bodyFatResult.bmiMethod,
+              "%"
+            ] })
+          ] })
+        ] }) })
+      ] })
+    ] }),
+    isCalorie && calorieResult && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.resultCard, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.resultHeader, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: styles.resultTitle, children: "Your Result" }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { marginBottom: "16px", fontSize: "14px", color: COLORS.textSecondary }, children: "The results show a number of daily calorie estimates that can be used as a guideline for how many calories to consume each day to maintain, lose, or gain weight at a chosen rate." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.list, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { ...styles.listItem, alignItems: "center" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 600 }, children: "Maintain weight" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column", alignItems: "flex-end" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 800, fontSize: "18px", color: COLORS.primary }, children: calorieResult.maintain.toLocaleString() }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "12px", color: COLORS.textSecondary }, children: "Calories/day" })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { ...styles.listItem, alignItems: "center" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 600 }, children: "Mild weight loss" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "12px", color: COLORS.textSecondary }, children: "0.5 lb/week" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column", alignItems: "flex-end" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 800, fontSize: "18px", color: COLORS.textMain }, children: calorieResult.mildLoss.toLocaleString() }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "12px", color: COLORS.textSecondary }, children: "90%" })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { ...styles.listItem, alignItems: "center" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 600 }, children: "Weight loss" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "12px", color: COLORS.textSecondary }, children: "1 lb/week" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column", alignItems: "flex-end" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 800, fontSize: "18px", color: COLORS.textMain }, children: calorieResult.weightLoss.toLocaleString() }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "12px", color: COLORS.textSecondary }, children: "80%" })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { ...styles.listItem, borderBottom: "none", marginBottom: 0, alignItems: "center" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 600 }, children: "Extreme weight loss" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "12px", color: COLORS.textSecondary }, children: "2 lb/week" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column", alignItems: "flex-end" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 800, fontSize: "18px", color: COLORS.textMain }, children: calorieResult.extremeLoss.toLocaleString() }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: "12px", color: COLORS.textSecondary }, children: "61%" })
+          ] })
+        ] })
+      ] })
+    ] }),
+    isPhoto && photoResult && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.resultCard, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.resultHeader, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: styles.resultTitle, children: "Your Health Insights" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { marginBottom: "16px", fontSize: "14px", color: COLORS.textSecondary }, children: "Based on visual analysis of your uploaded photos:" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.list, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.listItem, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Visual BMI Estimate" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 600, color: COLORS.textMain }, children: photoResult.bmiEstimate })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.listItem, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "General Fitness" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontWeight: 600, color: COLORS.textMain, maxWidth: "50%", textAlign: "right" }, children: photoResult.fitness })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "16px" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontWeight: 600, marginBottom: "8px", color: COLORS.primary }, children: "Recommendations" }),
+            photoResult.tips.map((tip, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: "8px", fontSize: "14px", marginBottom: "4px", color: COLORS.textMain }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { color: COLORS.primary }, children: "\u2022" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: tip })
+            ] }, i))
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: "32px" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.sectionTitle, children: "Suggested Supplements" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.productGrid, children: SUPPLEMENTS.map((product) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.productCard, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.productImageArea, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "img",
+            {
+              src: product.image,
+              alt: product.title.replace("\n", " "),
+              style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }
+            }
+          ) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.productTitle, children: product.title }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.productPrice, children: product.price }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", { href: product.link, target: "_blank", rel: "noreferrer", style: styles.buyButton, className: "btn-press", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShoppingCart, { size: 16 }),
+              " View Product"
+            ] })
+          ] })
+        ] }, product.id)) })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.footer, className: "no-print", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: clearInputs, className: "btn-press", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RotateCcw, { size: 16 }),
+        " Reset Defaults"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, className: "btn-press", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Heart, { size: 16 }),
+        " Donate"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: () => setShowFeedbackModal(true), className: "btn-press", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MessageSquare, { size: 16 }),
+        " Feedback"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: () => window.print(), className: "btn-press", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Printer, { size: 16 }),
+        " Print"
+      ] })
+    ] }),
+    showFeedbackModal && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.modalOverlay, onClick: () => setShowFeedbackModal(false), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.modalContent, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { style: styles.modalClose, onClick: () => setShowFeedbackModal(false), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Minus, { size: 24, style: { transform: "rotate(45deg)" } }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: "24px", fontWeight: 800, marginBottom: "8px", color: COLORS.textMain }, children: "Feedback" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: "14px", color: COLORS.textSecondary, marginBottom: "24px" }, children: "Help us improve the calculator." }),
+      feedbackStatus === "success" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { textAlign: "center", padding: "20px", color: COLORS.primary, fontWeight: 600 }, children: "Thanks for your feedback!" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "textarea",
+          {
+            style: { ...styles.input, height: "120px", resize: "none", fontFamily: "inherit" },
+            placeholder: "Tell us what you think...",
+            value: feedbackText,
+            onChange: (e) => setFeedbackText(e.target.value)
+          }
+        ),
+        feedbackStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { color: COLORS.red, fontSize: "14px", marginBottom: "10px" }, children: "Failed to send. Please try again." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            style: { ...styles.calcButton, width: "100%" },
+            onClick: handleFeedbackSubmit,
+            disabled: feedbackStatus === "submitting" || !feedbackText.trim(),
+            className: "btn-press",
+            children: feedbackStatus === "submitting" ? "Sending..." : "Send Feedback"
+          }
+        )
+      ] })
+    ] }) }),
+    showSubscribeModal && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: styles.modalOverlay, onClick: () => setShowSubscribeModal(false), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.modalContent, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { style: styles.modalClose, onClick: () => setShowSubscribeModal(false), children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Minus, { size: 24, style: { transform: "rotate(45deg)" } }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: "24px", fontWeight: 800, marginBottom: "8px", color: COLORS.textMain }, children: "Stay Updated" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: "14px", color: COLORS.textSecondary, marginBottom: "24px" }, children: "Get the latest health tips and calculator updates delivered to your inbox." }),
+      subscribeStatus === "success" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { textAlign: "center", padding: "20px", color: COLORS.primary, fontWeight: 600 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: "40px", marginBottom: "10px" }, children: "\u{1F389}" }),
+        subscribeMessage
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: "16px" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { style: { display: "block", fontSize: "14px", fontWeight: 600, marginBottom: "8px", color: COLORS.textMain }, children: "Email Address" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "input",
+            {
+              style: styles.input,
+              placeholder: "you@example.com",
+              value: email,
+              onChange: (e) => setEmail(e.target.value)
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { marginBottom: "20px", minHeight: "120px", display: "flex", justifyContent: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { id: "turnstile-widget" }) }),
+        subscribeStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { color: COLORS.red, fontSize: "14px", marginBottom: "16px", textAlign: "center" }, children: subscribeMessage }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            style: { ...styles.calcButton, width: "100%" },
+            onClick: handleSubscribe,
+            disabled: subscribeStatus === "loading",
+            className: "btn-press",
+            children: subscribeStatus === "loading" ? "Subscribing..." : "Subscribe"
+          }
+        )
+      ] })
+    ] }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: `
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        .btn-press {
+          transition: transform 0.1s ease, opacity 0.2s;
+        }
+        .btn-press:active {
+          transform: scale(0.95);
+        }
+        .btn-press:hover {
+          opacity: 0.7;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        @media print {
+          body {
+            background-color: white;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      ` })
+  ] });
 }
 
 // src/main.tsx
 var import_jsx_runtime2 = __toESM(require_jsx_runtime(), 1);
-var container = document.getElementById("auto-loan-calculator-root");
+var ErrorBoundary = class extends import_react4.default.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Widget Error Boundary caught error:", error, errorInfo);
+    try {
+      fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event: "crash",
+          data: {
+            error: error?.message || "Unknown error",
+            stack: error?.stack,
+            componentStack: errorInfo?.componentStack
+          }
+        })
+      }).catch((e) => console.error("Failed to report crash", e));
+    } catch (e) {
+    }
+  }
+  render() {
+    if (this.state.hasError) {
+      return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { style: { padding: 20, textAlign: "center", fontFamily: "sans-serif", color: "#DC2626" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h3", { children: "Something went wrong." }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { children: "Please try refreshing the page." })
+      ] });
+    }
+    return this.props.children;
+  }
+};
+var container = document.getElementById("bmi-health-calculator-root");
 if (!container) {
-  throw new Error("auto-loan-calculator-root element not found");
+  throw new Error("bmi-health-calculator-root element not found");
 }
 var root = (0, import_client.createRoot)(container);
 root.render(
-  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_react2.default.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MortgageHelloWorld, {}) })
+  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_react4.default.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(ErrorBoundary, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Calculator, {}) }) })
 );
 /*! Bundled license information:
 
@@ -24522,5 +26663,141 @@ react/cjs/react-jsx-runtime.development.js:
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/shared/src/utils.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/defaultAttributes.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/Icon.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/createLucideIcon.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/camera.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/chevron-down.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/heart.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/loader.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/mail.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/message-square.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/minus.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/play.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/plus.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/printer.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/rotate-ccw.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/icons/shopping-cart.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
+   *)
+
+lucide-react/dist/esm/lucide-react.js:
+  (**
+   * @license lucide-react v0.554.0 - ISC
+   *
+   * This source code is licensed under the ISC license.
+   * See the LICENSE file in the root directory of this source tree.
    *)
 */

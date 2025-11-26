@@ -1,13 +1,13 @@
-# Auto Loan Calculator - ChatGPT MCP Connector
+# BMI Health Calculator - ChatGPT MCP Connector
 
-A Model Context Protocol (MCP) server that provides an interactive auto loan calculator widget for ChatGPT. Helps users estimate monthly payments for financed vehicles, analyze scenarios, and plan costs.
+A Model Context Protocol (MCP) server that provides an interactive BMI and health calculator widget for ChatGPT. Helps users estimate body mass index and analyze health metrics.
 
 ## Features
 
-- 💰 Calculate monthly payments for auto loans
-- 📊 Simple inputs: purchase price, interest rate, loan term
+- 💰 Calculate BMI
+- 📊 Simple inputs: height, weight
 - 🔄 Interactive widget that appears directly in ChatGPT
-- 📈 Shows principal, interest, and total payment breakdown
+- 📈 Shows health category breakdown
 
 ## Quick Start
 
@@ -28,7 +28,7 @@ pnpm install
 pnpm start
 ```
 
-Server runs on `http://localhost:8000`
+Server runs on `http://localhost:8000`. **Note:** HTTP endpoints are for local development only. The SDK requires HTTPS for all production connections.
 
 ### Deploy to Render.com
 
@@ -74,7 +74,7 @@ ANALYTICS_PASSWORD=your_password
 
 ## Privacy & Data Use
 
-- **What we collect:** When the widget runs inside ChatGPT we receive the location (city/region/country), locale, device/browser fingerprint, and an inferred loan query via `_meta` so we can prefill the calculator and measure usage.
+- **What we collect:** When the widget runs inside ChatGPT we receive the location (city/region/country), locale, device/browser fingerprint, and an inferred health query via `_meta` so we can prefill the calculator and measure usage.
 - **How we use it:** These fields feed the `/analytics` dashboard and error alerts only; we do not sell or share this data with third parties.
 - **Retention:** Logs are stored for **30 days** in the `/logs` folder on the server and then automatically rotated.
 - **User input storage:** The widget caches your in-progress form values in `localStorage` so they persist across refreshes; entries automatically expire after **30 days**. Clear them anytime with the “Reset defaults” button.
