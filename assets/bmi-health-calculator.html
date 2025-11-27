@@ -33,6 +33,36 @@
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
     <script>
       window.TURNSTILE_SITE_KEY = "__TURNSTILE_SITE_KEY__";
+      
+      // Global error handler to catch and display crashes
+      window.onerror = function(message, source, lineno, colno, error) {
+        const root = document.getElementById('bmi-health-calculator-root');
+        if (root) {
+          root.innerHTML = `
+            <div style="padding: 20px; color: red; font-family: monospace; background: #fff0f0; border: 1px solid red; margin: 20px; white-space: pre-wrap;">
+              <h3>Runtime Error</h3>
+              <div><strong>Message:</strong> ${message}</div>
+              <div><strong>Location:</strong> ${source}:${lineno}:${colno}</div>
+              <div><strong>Stack:</strong> ${error ? error.stack : 'N/A'}</div>
+            </div>
+          `;
+        }
+        console.error('[BMI Fatal]', message, error);
+        return false;
+      };
+
+      window.onunhandledrejection = function(event) {
+        const root = document.getElementById('bmi-health-calculator-root');
+        if (root) {
+           root.innerHTML = `
+            <div style="padding: 20px; color: red; font-family: monospace; background: #fff0f0; border: 1px solid red; margin: 20px; white-space: pre-wrap;">
+              <h3>Unhandled Promise Rejection</h3>
+              <div><strong>Reason:</strong> ${event.reason}</div>
+            </div>
+          `;
+        }
+        console.error('[BMI Rejection]', event.reason);
+      };
     </script>
   </head>
   <body>
