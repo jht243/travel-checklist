@@ -687,6 +687,7 @@ function humanizeEventName(event: string): string {
     widget_user_feedback: "User Feedback",
     widget_test_event: "Test Event",
     widget_followup_click: "Follow-up Click",
+    widget_crash: "Widget Crash",
   };
   return eventMap[event] || event;
 }
