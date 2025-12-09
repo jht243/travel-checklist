@@ -30,6 +30,7 @@ const ASSET_ASSUMPTIONS: Record<string, { mean: number; stdDev: number; name: st
 
 // LocalStorage persistence
 const STORAGE_KEY = "PORTFOLIO_OPTIMIZER_DATA";
+const BANNER_STORAGE_KEY = "PORTFOLIO_BANNER_DISMISSED";
 const EXPIRATION_HOURS = 72; // 3 days
 
 interface SavedPortfolioData {
@@ -342,7 +343,31 @@ export default function PortfolioSimulator({ initialData }: { initialData?: any 
   const [email, setEmail] = useState("");
   const [subscribeStatus, setSubscribeStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [subscribeMessage, setSubscribeMessage] = useState("");
-  const [showBanner, setShowBanner] = useState(true);
+  const [showBanner, setShowBanner] = useState(() => {
+    try {
+        const dismissed = localStorage.getItem(BANNER_STORAGE_KEY);
+        if (dismissed) {
+            const timestamp = parseInt(dismissed, 10);
+            const now = new Date().getTime();
+            // 24 hours in milliseconds
+            if (now - timestamp < 24 * 60 * 60 * 1000) {
+                return false;
+            }
+        }
+    } catch (e) {
+        // Ignore storage errors
+    }
+    return true;
+  });
+
+  const handleDismissBanner = () => {
+    setShowBanner(false);
+    try {
+        localStorage.setItem(BANNER_STORAGE_KEY, new Date().getTime().toString());
+    } catch (e) {
+        console.error("Failed to save banner dismissal", e);
+    }
+  };
 
   const handleSubscribe = async () => {
     if (!email || !email.includes("@")) {
@@ -577,18 +602,13 @@ export default function PortfolioSimulator({ initialData }: { initialData?: any 
             </button>
             <div 
                 style={{cursor: "pointer", padding: 4, position: "absolute", top: 8, right: 8, color: COLORS.textSecondary}} 
-                onClick={() => setShowBanner(false)}
+                onClick={handleDismissBanner}
             >
                 <X size={16} />
             </div>
           </div>
       </div>
       )}
-
-      <div style={{ backgroundColor: COLORS.accentLight, borderRadius: "16px", padding: "16px", marginBottom: "24px", display: "flex", alignItems: "center", gap: "12px" }}>
-        <Info size={20} color={COLORS.primaryDark} style={{ flexShrink: 0 }} />
-        <div style={{ fontSize: "13px", color: COLORS.primaryDark, lineHeight: 1.5 }}>This tool is for <strong>educational purposes only</strong>. Results are hypothetical.</div>
-      </div>
 
       <div style={styles.card}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
