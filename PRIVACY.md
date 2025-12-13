@@ -1,11 +1,11 @@
 # Privacy Policy
 
-**Crypto Portfolio Optimizer**  
+**Crypto Yield Optimizer**  
 *Last Updated: December 2024*
 
 ## Overview
 
-Crypto Portfolio Optimizer is a Monte Carlo investment simulation tool that runs entirely in your browser within ChatGPT. We are committed to protecting your privacy and being transparent about our data practices.
+Crypto Yield Optimizer is an educational DeFi yield optimization tool that runs entirely in your browser within ChatGPT. We are committed to protecting your privacy and being transparent about our data practices.
 
 ## Data Collection
 
@@ -31,7 +31,7 @@ All portfolio calculations and simulations are performed:
 
 ## Data Storage
 
-- **Browser LocalStorage**: Your portfolio inputs may be cached in your browser's localStorage for convenience (72-hour expiration). This data never leaves your device.
+- **Browser LocalStorage**: Your portfolio inputs may be cached in your browser's localStorage for convenience (30-day expiration). This data never leaves your device.
 - **Server Logs**: Anonymous analytics are logged for up to 30 days for service improvement.
 
 ## Third-Party Sharing
@@ -40,7 +40,7 @@ We do not sell, rent, or share your data with third parties for marketing purpos
 
 ## Data Retention
 
-- **LocalStorage**: Automatically expires after 72 hours
+- **LocalStorage**: Automatically expires after 30 days
 - **Server Logs**: Retained for up to 30 days, then deleted
 
 ## Your Rights
@@ -66,7 +66,10 @@ We may update this policy periodically. Significant changes will be noted in the
 
 ## Contact
 
-For privacy questions or concerns, please open an issue on the project repository.
+For privacy questions or data deletion requests:
+- **Email**: support@crypto-portfolio-optimizer.onrender.com
+- **GitHub**: Open an issue on the project repository
+- **Deletion requests**: Include the UTC timestamp of your ChatGPT session; we will delete associated logs within 7 business days.
 
 ---
 

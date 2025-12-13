@@ -166,10 +166,11 @@ const YIELD_STRATEGIES = [
   }
 ];
 
-// LocalStorage persistence
+// LocalStorage persistence with 30-day expiry per SDK guidelines
 const STORAGE_KEY = "CRYPTO_YIELD_OPTIMIZER_DATA";
 const BANNER_STORAGE_KEY = "CRYPTO_YIELD_BANNER_DISMISSED";
-const EXPIRATION_HOURS = 72;
+const EXPIRATION_DAYS = 30;
+const EXPIRATION_HOURS = EXPIRATION_DAYS * 24; // 720 hours
 
 // CoinGecko ID mapping for price fetching
 const COINGECKO_IDS: Record<string, string> = {
