@@ -1408,6 +1408,23 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
     
     console.log("[TravelChecklist] Hydrating from initialData:", initialData);
     
+    // AUTO-CLEAR: When new hydration data arrives, clear ALL old state first
+    // This prevents stale localStorage data from conflicting with new trip data
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(SAVED_CHECKLISTS_KEY);
+      console.log("[TravelChecklist] Cleared old localStorage data for fresh hydration");
+    } catch (e) {
+      console.warn("[TravelChecklist] Could not clear localStorage:", e);
+    }
+    
+    // Reset all state to defaults before applying hydration
+    setChecklist([]);
+    setIndividualChecklists({});
+    setIndividualPrefs({});
+    setChecklistGenerated(false);
+    setSelectedTab("shared");
+    
     try {
       const updates: Partial<TripProfile> = {};
       

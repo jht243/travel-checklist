@@ -588,6 +588,28 @@ function createTravelChecklistServer(): Server {
             if (/photograph|camera|dslr|mirrorless|shoot\s*photo/i.test(userText)) inferredPresets.push("photographer");
             if (inferredPresets.length > 0) args.presets = inferredPresets;
           }
+          
+          // Infer travelers from relationship mentions
+          // "with my girlfriend/wife/partner" = 1 adult male (me) + 1 adult female
+          // "with my boyfriend/husband" = 1 adult female (me) + 1 adult male
+          if (!args.adult_males && !args.adult_females && !args.travelers) {
+            if (/\b(girlfriend|wife|gf)\b/i.test(userText)) {
+              // User is likely male, traveling with female partner
+              args.adult_males = 1;
+              args.adult_females = 1;
+            } else if (/\b(boyfriend|husband|bf)\b/i.test(userText)) {
+              // User is likely female, traveling with male partner
+              args.adult_females = 1;
+              args.adult_males = 1;
+            } else if (/\b(partner|spouse)\b/i.test(userText)) {
+              // Gender-neutral, assume 1 male + 1 female
+              args.adult_males = 1;
+              args.adult_females = 1;
+            } else if (/\bfor\s+(?:me|myself)\b/i.test(userText) && !(/\bwith\b/i.test(userText))) {
+              // Solo traveler - "for me", "for myself" without "with"
+              args.adult_males = 1;
+            }
+          }
 
         } catch (e) {
           console.warn("Parameter inference from meta failed", e);
