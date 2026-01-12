@@ -1788,6 +1788,45 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
       
       return [...updatedItems, ...customItems];
     });
+    
+    // Also regenerate individual checklists to update quantities based on new tripDuration
+    const travelers = getIndividualTravelers(profile.travelers);
+    if (travelers.length > 0) {
+      setIndividualChecklists(currentIndivLists => {
+        const updatedIndivLists: Record<string, ChecklistItem[]> = {};
+        
+        travelers.forEach((t) => {
+          const individualProfile: TripProfile = {
+            ...profile,
+            presets: [],
+            travelers: [{
+              type: t.type as TravelerType,
+              male: t.gender === "male" ? 1 : 0,
+              female: t.gender === "female" ? 1 : 0
+            }]
+          };
+          
+          const freshIndivItems = generateChecklist(individualProfile);
+          const currentItems = currentIndivLists[t.id] || [];
+          const checkedMap = new Map(currentItems.map(item => [item.id.replace(`${t.id}-`, ''), item.checked]));
+          
+          const updatedItems = freshIndivItems.map(item => ({
+            ...item,
+            id: `${t.id}-${item.id}`,
+            checked: checkedMap.has(item.id) ? checkedMap.get(item.id)! : item.checked
+          }));
+          
+          // Keep custom items
+          const customItems = currentItems.filter(item => 
+            item.id.includes('custom-')
+          );
+          
+          updatedIndivLists[t.id] = [...updatedItems, ...customItems];
+        });
+        
+        return updatedIndivLists;
+      });
+    }
   }, [
     profile.destination,  // IMPORTANT: destination affects beach/cold detection
     profile.travelers, 
@@ -2107,9 +2146,23 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
   };
 
   const loadSavedChecklist = (sc: SavedChecklist) => {
-    setProfile(sc.profile);
+    // Recalculate tripDuration from dates to avoid stale values
+    const loadedProfile = { ...sc.profile };
+    if (loadedProfile.startDate && loadedProfile.endDate) {
+      const [startYear, startMonth, startDay] = loadedProfile.startDate.split('-').map(Number);
+      const [endYear, endMonth, endDay] = loadedProfile.endDate.split('-').map(Number);
+      const start = new Date(startYear, startMonth - 1, startDay);
+      const end = new Date(endYear, endMonth - 1, endDay);
+      const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      if (diff > 0) {
+        loadedProfile.tripDuration = diff;
+      }
+    }
+    setProfile(loadedProfile);
     setChecklist(sc.checklist);
     setIndividualChecklists(sc.individualChecklists);
+    // Reset individualPrefs to avoid stale preferences from previous trip
+    setIndividualPrefs({});
     setChecklistGenerated(true);
     setSelectedTab("shared");
     setShowSavedList(false);
@@ -2117,9 +2170,23 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
 
   const duplicateChecklist = (sc: SavedChecklist) => {
     setSaveChecklistName(`${sc.name} (Copy)`);
-    setProfile(sc.profile);
+    // Recalculate tripDuration from dates to avoid stale values
+    const loadedProfile = { ...sc.profile };
+    if (loadedProfile.startDate && loadedProfile.endDate) {
+      const [startYear, startMonth, startDay] = loadedProfile.startDate.split('-').map(Number);
+      const [endYear, endMonth, endDay] = loadedProfile.endDate.split('-').map(Number);
+      const start = new Date(startYear, startMonth - 1, startDay);
+      const end = new Date(endYear, endMonth - 1, endDay);
+      const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      if (diff > 0) {
+        loadedProfile.tripDuration = diff;
+      }
+    }
+    setProfile(loadedProfile);
     setChecklist(sc.checklist);
     setIndividualChecklists(sc.individualChecklists);
+    // Reset individualPrefs to avoid stale preferences from previous trip
+    setIndividualPrefs({});
     setChecklistGenerated(true);
     setEditingChecklistId(null);
     setShowSaveModal(true);
