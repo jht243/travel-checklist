@@ -2146,23 +2146,9 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
   };
 
   const loadSavedChecklist = (sc: SavedChecklist) => {
-    // Recalculate tripDuration from dates to avoid stale values
-    const loadedProfile = { ...sc.profile };
-    if (loadedProfile.startDate && loadedProfile.endDate) {
-      const [startYear, startMonth, startDay] = loadedProfile.startDate.split('-').map(Number);
-      const [endYear, endMonth, endDay] = loadedProfile.endDate.split('-').map(Number);
-      const start = new Date(startYear, startMonth - 1, startDay);
-      const end = new Date(endYear, endMonth - 1, endDay);
-      const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      if (diff > 0) {
-        loadedProfile.tripDuration = diff;
-      }
-    }
-    setProfile(loadedProfile);
+    setProfile(sc.profile);
     setChecklist(sc.checklist);
     setIndividualChecklists(sc.individualChecklists);
-    // Reset individualPrefs to avoid stale preferences from previous trip
-    setIndividualPrefs({});
     setChecklistGenerated(true);
     setSelectedTab("shared");
     setShowSavedList(false);
@@ -2170,23 +2156,9 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
 
   const duplicateChecklist = (sc: SavedChecklist) => {
     setSaveChecklistName(`${sc.name} (Copy)`);
-    // Recalculate tripDuration from dates to avoid stale values
-    const loadedProfile = { ...sc.profile };
-    if (loadedProfile.startDate && loadedProfile.endDate) {
-      const [startYear, startMonth, startDay] = loadedProfile.startDate.split('-').map(Number);
-      const [endYear, endMonth, endDay] = loadedProfile.endDate.split('-').map(Number);
-      const start = new Date(startYear, startMonth - 1, startDay);
-      const end = new Date(endYear, endMonth - 1, endDay);
-      const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      if (diff > 0) {
-        loadedProfile.tripDuration = diff;
-      }
-    }
-    setProfile(loadedProfile);
+    setProfile(sc.profile);
     setChecklist(sc.checklist);
     setIndividualChecklists(sc.individualChecklists);
-    // Reset individualPrefs to avoid stale preferences from previous trip
-    setIndividualPrefs({});
     setChecklistGenerated(true);
     setEditingChecklistId(null);
     setShowSaveModal(true);
