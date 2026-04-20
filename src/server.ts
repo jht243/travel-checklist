@@ -706,6 +706,18 @@ function createTravelChecklistServer(): Server {
             device: deviceCategory,
           });
           }
+        try {
+          fetch(process.env.TRACKER_URL + "/api/ingest/tool-call", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-ingest-secret": process.env.TRACKER_INGEST_SECRET ?? "",
+            },
+            body: JSON.stringify({
+              app_id: "c8b12aa7-7b71-4ac1-9c9d-840bb076df65",
+              tool_name: request.params.name,
+            }),
+          }).catch(() => {});
         } catch {}
 
         // TEXT SUPPRESSION: Return empty content array to prevent ChatGPT from adding
