@@ -687,25 +687,26 @@ function createTravelChecklistServer(): Server {
 
         // Log success analytics
         try {
-          // Check for "empty" result - when no main travel inputs are provided
           const hasMainInputs = args.destination || args.trip_duration || args.purpose;
-          
+
           if (!hasMainInputs) {
-             logAnalytics("tool_call_empty", {
-               toolName: request.params.name,
-               params: request.params.arguments || {},
-               reason: "No trip details provided"
-             });
+            logAnalytics("tool_call_empty", {
+              toolName: request.params.name,
+              params: request.params.arguments || {},
+              reason: "No trip details provided",
+            });
           } else {
-          logAnalytics("tool_call_success", {
-            responseTime,
-            params: request.params.arguments || {},
-            inferredQuery: inferredQuery.join(", "),
-            userLocation,
-            userLocale,
-            device: deviceCategory,
-          });
+            logAnalytics("tool_call_success", {
+              responseTime,
+              params: request.params.arguments || {},
+              inferredQuery: inferredQuery.join(", "),
+              userLocation,
+              userLocale,
+              device: deviceCategory,
+            });
           }
+        } catch {}
+
         try {
           fetch(process.env.TRACKER_URL + "/api/ingest/tool-call", {
             method: "POST",
